@@ -14,7 +14,7 @@ This is a school project developed by **Mohit Singh** and **Dev Chauhan**. It is
   - About the Hospital
 - **Patient Portal:** Menu is set up with options to Register, View, and Search patients.
   - **Patient Registration:** Fully functional. It captures patient details (Name, Age, Phone, Gender, Address, Blood Group) and securely inserts the record into the MySQL database (`Patient_name` table).
-- **Doctor's Portal:** Structure initialized.
+- **Doctor's Portal:** View Doctors option working and others are in progress.
 
 ## ⚙️ Setup Instructions
 To run this project on your local machine, follow these steps:
@@ -28,7 +28,9 @@ Install the required Python modules using pip:
 ```bash
 pip install mysql-connector-python pandas python-dotenv
 ```
-
+```bash
+pip install tabulate
+```
 ### 2. Configure Database Environment Variables
 For security reasons, database credentials are not hardcoded. Create a file named `.env` in the root directory of the project and add your database configuration:
 
@@ -42,12 +44,13 @@ Database_name = your_database_name
 
 ### 3. Database Table Setup
 You will need to create the corresponding table in your MySQL database for the code to execute successfully. Ensure your database contains a table named `Patient_name` with columns configured to accept:
+- `ID` (Varchar/Primary Key)
 - `Name` (String/Varchar)
 - `Age` (Int)
 - `Gender` (String/Varchar)
-- `Blood_group` (String/Varchar)
-- `Phone` (String/Varchar)
+- `B_group` (String/Varchar)
 - `Address` (String/Varchar)
+- `Phone` (String/Varchar)
 
 ### 4. Run the Application
 Execute the main script from your terminal:
