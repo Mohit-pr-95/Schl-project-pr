@@ -54,7 +54,9 @@ if choose_service == 1:
         patient_bg = input("Enter Blood group  :  ")
 
         try:
-            cursor.execute("""INSERT INTO Patient_name (Name, Age, Gender, Blood_group, Phone, Address) VALUES (%s, %s, %s, %s, %s, %s)""",(patient_name,patient_age,patient_gender,patient_bg,"+91" + str(patient_phone),patient_adress))
+            cursor.execute("SELECT * FROM patients_info")
+            
+            cursor.execute("""INSERT INTO patients_info (ID, Name, Age, Gender, B_goup, Address, Phone) VALUES (%s, %s, %s, %s, %s, %s, %s)""",(f"PT9U{len(cursor.fetchall()) + 1}", patient_name,patient_age,patient_gender,patient_bg,patient_adress, "+91 " + str(patient_phone)))
 
             connection.commit() # Telling MySQL to save the above changes in database
 
@@ -69,9 +71,38 @@ if choose_service == 1:
 
         print("\n\nPlease wait....\nChecking details....\nRegistration successfull\n\nThanks for choosing Medicare!!...")
 
+    # if patient_service_choice == 2:
+    
+        # FROM HERE AHEAD WORK WILL BE DONE
+
+
 elif choose_service == 2:
     print("\n===================================================================================")
     print("                             Doctor's Portal                                         ")
     print("===================================================================================\n")
 
-    
+    try:
+        doctor_service_choice = int(input('\n1) View doctors\n2) Search doctors by department\n\nChoose as per your requirement  :  '))
+    except ValueError:
+        print('Invalid choice!!, please enter appropriate service number...')
+        exit()
+
+    if doctor_service_choice == 1:
+        cursor.execute("SELECT * FROM doctors_info")
+        data = cursor.fetchall()
+
+        doctor_ids = [i[0] for i in data]
+        names = [i[1] for i in data]
+        department = [i[2] for i in data]
+        experience = [i[3] for i in data]
+
+        table = pd.DataFrame({
+            "ID" : doctor_ids,
+            "Names" : names,
+            "Specialization" : department,
+            "Experience" : experience
+        })
+
+        print('\nHere is complete list of doctors of "MEDICARE Hospital"\n')
+        print(table.to_markdown(index=False))
+        print('\nThanks to visit MEDICARE Hospital')
