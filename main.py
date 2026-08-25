@@ -1,5 +1,6 @@
 # --------- School project ----------
 # --------- Author : Mohit singh & Dev chauhan -------------
+# --------- Mohit singh (Python code writer) & dev chauhan (Database manager) ------------
 # --------- Date : 22/08/2026 ------------------------------
 
 import os

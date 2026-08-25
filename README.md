@@ -1,6 +1,6 @@
 # Medicare Hospital Management System
 
-This is a school project developed by **Mohit Singh** and **Dev Chauhan**. It is a Command Line Interface (CLI) application written in Python that simulates a hospital management system. The application connects to a MySQL database to securely store, retrieve, and manage patient and doctor records.
+This is a school project developed by **Mohit Singh(Python code writer)** and **Dev Chauhan(Database manager)**. It is a Command Line Interface (CLI) application written in Python that simulates a hospital management system. The application connects to a MySQL database to securely store, retrieve, and manage patient and doctor records.
 
 ---
 
