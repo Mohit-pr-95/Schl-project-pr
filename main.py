@@ -196,14 +196,14 @@ elif choose_service == 3:
         exit()
 
     if appointment_services == 1:
-        appointment_name = input("Enter Patient's name  :  ")
+        appointment_name = input("\nEnter Patient's name  :  ")
         try:
-                appointment_age = int(input("Enter age  :  "))
+                appointment_age = int(input("\nEnter age  :  "))
                 appointment_div = int(input('\n1) Cardiology\n2) Dermatology\n3) Endocrinology\n4) Gynecology\n5) Neurology\n6) Oncology\n7) Ophthalmology\n8) Orthopedics\n9) Pediatrics\n10) Psychiatry\n11) Radiology\n12) Urology\n\nChoose Your category  :  '))
         except ValueError:
                 print('Invalid choice !!, restart the programme...')
                 exit()
-        appointment_gender = input('Enter gender (M/F)  :  ')
+        appointment_gender = input('\nEnter gender (M/F)  :  ')
         
         cursor.execute('SELECT DISTINCT Department FROM doctors_info ORDER BY Department')
         appointment_fetchall = cursor.fetchall()
@@ -216,23 +216,28 @@ elif choose_service == 3:
             try:
                 cursor.execute("""SELECT Names FROM doctors_info WHERE Department = %s""",(appointment_dep,))
         
-                doctor = cursor.fetchall()
+                doctors_list = cursor.fetchall()
                 cursor.execute('SELECT * FROM appointments')
         
-                cursor.execute("""INSERT INTO appointments(ID,P_Name,Doctor,Division,date) VALUES (%s,%s,%s,%s,%s)""",(f'AP9U{len(cursor.fetchall()) + 1}' , appointment_name , rnd.choice(doctor)[0] , appointment_dep , dt.date.today()))
+                cursor.execute("""INSERT INTO appointments(ID,P_Name,Doctor,Division,date) VALUES (%s,%s,%s,%s,%s)""",(f'AP9U{len(cursor.fetchall()) + 1}' , appointment_name , rnd.choice(doctors_list)[0] , appointment_dep , dt.date.today()))
         
                 connection.commit()
+
+                cursor.execute('SELECT Doctor From appointments')
+
+                doctor = cursor.fetchall()[len(cursor.fetchall()) - 1][0]
         
                 cursor.execute('SELECT * FROM appointments')
         
-                print(f'Appointment Booked successfully !! , Details are shown below :\n\n')
+                print(f'\nAppointment Booked successfully !! , Details are shown below :\n\n')
         
                 print(pd.DataFrame({
-                    "ID" : [f"AP9U{len(cursor.fetchall())}"],
+                    "ID\n(Remember it)" : [f"AP9U{len(cursor.fetchall())}"],
                     "Patient" : [appointment_name],
                     "Age" : [appointment_age],
                     "Division" : [appointment_dep],
-                    "Doctor appointed" : [rnd.choice(doctor)[0]]
+                    "Doctor appointed" : [doctor],
+                    "Date of\nAppointment" : [dt.date.today()]
                     }).to_markdown(index=False))
         
                 print("\nThanks for choosing MEDICARE...\n")
