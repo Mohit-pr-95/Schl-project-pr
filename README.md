@@ -1,6 +1,6 @@
 # Medicare Hospital Management System
 
-This is a school project developed by **Mohit Singh(Python code writer)** and **Dev Chauhan(Database manager)**. It is a Command Line Interface (CLI) application written in Python that simulates a hospital management system. The application connects to a MySQL database to securely store, retrieve, and manage patient and doctor records.
+This is a school project developed by **Mohit Singh(Python code writer)** and **Dev Chauhan(Database manager)**. It is a Command Line Interface (CLI) application written in Python that simulates a hospital management system. The application connects to a MySQL database to securely store, retrieve, and manage patient, doctor, and appointment records.
 
 ---
 
@@ -14,7 +14,7 @@ This is a school project developed by **Mohit Singh(Python code writer)** and **
 The central navigation hub allows users to select from various hospital services:
 - **1) Patient portal**
 - **2) Doctor's portal**
-- **3) Appointments** *(Upcoming)*
+- **3) Appointments**
 - **4) More services** *(Upcoming)*
 - **5) Billing** *(Upcoming)*
 - **6) Emergency information** *(Upcoming)*
@@ -55,6 +55,17 @@ The central navigation hub allows users to select from various hospital services
     11. Radiology
     12. Urology
   - Dynamically filters and displays specialists matching the selected department.
+
+### 5. Appointments
+- **Book an Appointment:**
+  - Collects the patient's name, age, and gender.
+  - Allows the patient to select one of the 12 clinical departments.
+  - Assigns a random doctor from the selected department.
+  - Generates a formatted appointment ID (e.g., `AP9U1`, `AP9U2`, etc.) based on existing records.
+  - Saves the appointment ID, patient name, assigned doctor, department, and booking date to the `appointments` MySQL table.
+  - Displays the booking details in a formatted markdown table after a successful booking.
+- **Planned Appointment Features:**
+  - The menu includes options to view and cancel appointments, but those operations are not implemented yet.
 
 ---
 
@@ -100,6 +111,14 @@ CREATE TABLE doctors_info (
     Department VARCHAR(100) NOT NULL,
     Experience INT NOT NULL
 );
+
+CREATE TABLE appointments (
+    ID VARCHAR(10) PRIMARY KEY,
+    P_Name VARCHAR(100) NOT NULL,
+    Doctor VARCHAR(100) NOT NULL,
+    Division VARCHAR(100) NOT NULL,
+    date DATE NOT NULL
+);
 ```
 
 ### 4. Run the Application
@@ -114,14 +133,16 @@ python main.py
 1. **Launch:** Running `main.py` opens the Medicare Hospital CLI welcome banner and displays the main menu.
 2. **Interactive CLI Navigation:** Users input the numerical choice for their desired action with built-in input validation to prevent crashes.
 3. **Database Interactions:**
-   - Registrations perform parameterized `INSERT` SQL operations and commit changes.
-   - Searches and lookups execute dynamic `SELECT` SQL queries and fetch records.
-4. **Tabular Data Presentation:** Query results are converted to Pandas DataFrames and formatted using `to_markdown()` for readable output in the terminal.
+  - Registrations perform parameterized `INSERT` SQL operations and commit changes.
+  - Searches and lookups execute `SELECT` SQL queries and fetch records.
+  - Appointment bookings query doctors by department, insert a new appointment, and commit the booking.
+4. **Tabular Data Presentation:** Query results and appointment confirmations are converted to Pandas DataFrames and formatted using `to_markdown()` for readable output in the terminal.
 
 ---
 
 ## 🌟 Future Roadmap
-- [ ] Implement Appointment Booking & Scheduling system.
+- [x] Implement basic appointment booking.
+- [ ] Implement viewing and cancellation of appointments.
 - [ ] Develop Hospital Billing & Invoice generation module.
 - [ ] Add Emergency Services and Hospital Contact/About sections.
 - [ ] Add support for updating and deleting patient/doctor records.

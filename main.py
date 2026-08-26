@@ -8,16 +8,22 @@ from dotenv import load_dotenv
 import mysql.connector # Importing SQL for table database managament through python script
 import pandas as pd
 import datetime as dt
+import random as rnd
 
 load_dotenv()
 
 # connecting to local MySQL server
-connection = mysql.connector.connect(
+try:
+
+    connection = mysql.connector.connect(
     host = os.getenv("Database_host"),
     user = os.getenv("Database_user"),
     password = os.getenv("Database_pass"),
     database = os.getenv("Database_name")
-)
+    )
+except mysql.connector.Error as error:
+    print(f'Some error arised in connecting with SQL server : {error}\nRestart the programme...')
+    exit()
 
 cursor = connection.cursor()
 
@@ -177,3 +183,69 @@ elif choose_service == 2:
     else:
         print('Invalid choice !!, Restart the programme...\n')
         exit()
+
+elif choose_service == 3:
+    print("\n===================================================================================")
+    print("                             Appointments                                            ")
+    print("===================================================================================\n")
+
+    try:
+        appointment_services = int(input('\n1) Book appointments\n2) View appointment\n3) Cancel appointment\n\nChoose as per your requirement  :  '))
+    except ValueError:
+        print('Inavlid input !!, enter a valid choice , Restart the programme...\nThanks to visit MEDICARE...\n')
+        exit()
+
+    if appointment_services == 1:
+        appointment_name = input("Enter Patient's name  :  ")
+        try:
+                appointment_age = int(input("Enter age  :  "))
+                appointment_div = int(input('\n1) Cardiology\n2) Dermatology\n3) Endocrinology\n4) Gynecology\n5) Neurology\n6) Oncology\n7) Ophthalmology\n8) Orthopedics\n9) Pediatrics\n10) Psychiatry\n11) Radiology\n12) Urology\n\nChoose Your category  :  '))
+        except ValueError:
+                print('Invalid choice !!, restart the programme...')
+                exit()
+        appointment_gender = input('Enter gender (M/F)  :  ')
+        
+        cursor.execute('SELECT DISTINCT Department FROM doctors_info ORDER BY Department')
+        appointment_fetchall = cursor.fetchall()
+        
+        if 1 <= appointment_div <= 12:
+            print('\nChecking Credentials...\nChecking available Doctors...\nLooking for Vacant appointments...\nPlease wait...\n')
+        
+            appointment_dep = appointment_fetchall[appointment_div - 1][0]
+        
+            try:
+                cursor.execute("""SELECT Names FROM doctors_info WHERE Department = %s""",(appointment_dep,))
+        
+                doctor = cursor.fetchall()
+                cursor.execute('SELECT * FROM appointments')
+        
+                cursor.execute("""INSERT INTO appointments(ID,P_Name,Doctor,Division,date) VALUES (%s,%s,%s,%s,%s)""",(f'AP9U{len(cursor.fetchall()) + 1}' , appointment_name , rnd.choice(doctor)[0] , appointment_dep , dt.date.today()))
+        
+                connection.commit()
+        
+                cursor.execute('SELECT * FROM appointments')
+        
+                print(f'Appointment Booked successfully !! , Details are shown below :\n\n')
+        
+                print(pd.DataFrame({
+                    "ID" : [f"AP9U{len(cursor.fetchall())}"],
+                    "Patient" : [appointment_name],
+                    "Age" : [appointment_age],
+                    "Division" : [appointment_dep],
+                    "Doctor appointed" : [rnd.choice(doctor)[0]]
+                    }).to_markdown(index=False))
+        
+                print("\nThanks for choosing MEDICARE...\n")
+        
+            except mysql.connector.Error as err:
+                print(f'OOPS!!, Looks like some error arised : {err}\nRestart the programme\nThanks for choosing MEDICARE...\n')
+                exit()
+        
+            finally:
+                cursor.close()
+                connection.close()
+        else:
+            print('Invalid choice!!, Retstart the programme...\nThanks for choosing MEDICARE...\n')
+            exit()
+        
+    # elif appointment_services == 2:
