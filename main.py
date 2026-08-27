@@ -334,3 +334,82 @@ elif choose_service == 3:
     else:
         print('\nInvalid choice , try again by restarting the programme!!, \nThanks for choosing MEDICARE...\n')
     
+elif choose_service == 4:
+    print("\n===================================================================================")
+    print("                             Hospital services                                       ")
+    print("===================================================================================\n")
+
+    try:
+        hospital_service_choice = int(input('\n1) Departments\n2) Laboratories\n3) Ambulance\n4) Pharmacy\n\nChoose as per your requirement  :  '))
+    except ValueError:
+        print("Inavlid Input , Retstart the programme\nThanks for choosing MEDIACRE...\n")
+        exit()
+
+    if hospital_service_choice == 1:
+        try:
+            department_service_choice = int(input('\n1) View all Departments\n2) Get details of a particular department\n\nChoose as per your requirement  :  '))
+        except ValueError:
+            print('Invalid input , retstart the programme !!\nThanks for choosing MEDICARE...\n')
+            exit()
+
+        if department_service_choice == 1:
+            try:
+                cursor.execute('SELECT DISTINCT Department FROM doctors_info ORDER BY Department')
+
+                print('\nList of all departments :-\n')
+
+                print(pd.DataFrame({
+                    "S.no." : [i for i in range(1,13)],
+                    "Departments" : [i[0] for i in cursor.fetchall()]
+                }).to_markdown(index=False))
+
+                print('\nThanks for choosing MEDICARE...\n')
+            except mysql.connector.Error as err:
+                print(f"\nOOps ! looks like some error occured in SQL server : {err}\nRestart the programme\n\nThanks for choosing MEDICARE...\n")
+                exit()
+            finally:
+                cursor.close()
+                connection.close()
+
+        elif department_service_choice == 2:
+            try:
+                department_detail_choice = int(input('\n1) Cardiology\n2) Dermatology\n3) Endocrinology\n4) Gynecology\n5) Neurology\n6) Oncology\n7) Ophthalmology\n8) Orthopedics\n9) Pediatrics\n10) Psychiatry\n11) Radiology\n12) Urology\n\nChoose department  :  '))
+            except ValueError:
+                print('\nInvalid choice !!, restart the programme...\n')
+                exit()
+            try:
+                cursor.execute('SELECT Department_Name FROM departments ORDER BY Department_Name')
+
+                cursor.execute("""SELECT * FROM departments WHERE Department_Name=%s""",(cursor.fetchall()[department_detail_choice - 1][0],))
+
+                department_details = cursor.fetchall()
+
+                cursor.execute("""SELECT * FROM doctors_info WHERE Department=%s""",(department_details[0][1],))
+                print(f"\nDetails of the department \"{department_details[0][1]}\" are here :- \n")
+                print(pd.DataFrame({
+                    "ID" : [department_details[0][0]],
+                    "Department\nname" : [department_details[0][1]],
+                    "Description\nof department" : [department_details[0][2]],
+                    "Number of\nDoctors" : [len(cursor.fetchall())]
+                }).to_markdown(index=False))
+
+                print("\nDoctors available in this department are :- \n")
+
+                cursor.execute("""SELECT * FROM doctors_info WHERE Department=%s""",(department_details[0][1],))
+                z = cursor.fetchall()
+                print(pd.DataFrame({
+                    "ID" : [i[0] for i in z],
+                    "Name\nof Doctor" : [i[1] for i in z],
+                    "Experience\n(in years)" : [i[3] for i in z]
+                }).to_markdown(index=False))
+                print('\nThanks for choosing MEDICARE...\n')
+            except mysql.connector.Error as err:
+                print("OOPS !!, looks like some error occured , Retstart the programme \nThanks for choosing MEDICARE...\n")
+                exit()
+
+            finally:
+                cursor.close()
+                connection.close()
+                
+        else:
+            print("Invalid choice !, Restart the programme\n\nThanks for choosing MEDICARE...\n")

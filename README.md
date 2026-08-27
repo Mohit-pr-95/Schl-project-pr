@@ -1,6 +1,6 @@
 # Medicare Hospital Management System
 
-This is a school project developed by **Mohit Singh (Python code writer)** and **Dev Chauhan (Database manager)**. It is a Command Line Interface (CLI) application written in Python that simulates a hospital management system. The application connects to a MySQL database to securely store, retrieve, and manage patient, doctor, and appointment records.
+This is a school project developed by **Mohit Singh (Python code writer)** and **Dev Chauhan (Database manager)**. It is a Command Line Interface (CLI) application written in Python that simulates a hospital management system. The application connects to a MySQL database to securely store, retrieve, and manage patient, doctor, appointment, and department records.
 
 ---
 
@@ -16,7 +16,7 @@ The central navigation hub allows users to select from various hospital services
 - **1) Patient portal**
 - **2) Doctor's portal**
 - **3) Appointments**
-- **4) More services** *(Upcoming)*
+- **4) More services (Hospital services)**
 - **5) Billing** *(Upcoming)*
 - **6) Emergency information** *(Upcoming)*
 - **7) About the hospital** *(Upcoming)*
@@ -59,7 +59,7 @@ The central navigation hub allows users to select from various hospital services
 
 ---
 
-### 5. Appointments Module (`Appointments`) - Fully Implemented
+### 5. Appointments Module (`Appointments`)
 - **Book an Appointment:**
   - Collects patient's name, age, gender, and selected medical department (from 12 divisions).
   - Automatically assigns a doctor randomly from available doctors in that department using Python's `random` module.
@@ -73,6 +73,18 @@ The central navigation hub allows users to select from various hospital services
 - **Cancel Appointment:**
   - Allows cancellation of existing appointments via Appointment ID (`AP9U..`).
   - Validates existence, executes a SQL `DELETE` query, commits the change to the database, and confirms cancellation.
+
+---
+
+### 6. Hospital Services (`Hospital services`)
+- **Departments Explorer:**
+  - **View All Departments:** Displays a numbered master list of all 12 hospital departments.
+  - **Detailed Department Info:**
+    - Queries the `departments` table to show department ID (`DEP01` - `DEP12`), department name, and an in-depth clinical description.
+    - Dynamically computes and displays the total number of doctors currently serving in that department.
+    - Displays a live roster of available doctors in that department with their Doctor IDs, Names, and Experience (in years).
+- **Upcoming Services:**
+  - Menu placeholders prepared for **Laboratories**, **Ambulance**, and **Pharmacy** services.
 
 ---
 
@@ -99,7 +111,7 @@ Database_name = your_database_name
 ```
 
 ### 3. Database Schema Setup
-Set up the required tables in your MySQL database (see `new.sql`):
+Set up the required tables and data in your MySQL database (see `new.sql`):
 
 ```sql
 CREATE DATABASE IF NOT EXISTS new_database;
@@ -129,6 +141,12 @@ CREATE TABLE appointments (
     Division CHAR(20) NOT NULL,
     Date DATE NOT NULL
 );
+
+CREATE TABLE departments (
+    ID VARCHAR(5) PRIMARY KEY,
+    Department_Name VARCHAR(100) NOT NULL UNIQUE,
+    Description TEXT NOT NULL
+);
 ```
 
 ### 4. Run the Application
@@ -144,7 +162,7 @@ python main.py
 2. **Interactive CLI Navigation:** Users input numerical choices with built-in validation to prevent application crashes.
 3. **Database Operations:**
    - **Insertions:** Patient registrations and appointment bookings execute parameterized `INSERT` SQL queries and commit changes.
-   - **Retrieval:** Details for patients, doctors, and appointments are retrieved using dynamic and parameterized `SELECT` SQL queries.
+   - **Retrieval:** Details for patients, doctors, appointments, and departments are retrieved using dynamic and parameterized `SELECT` SQL queries.
    - **Deletions:** Appointment cancellations execute parameterized `DELETE` SQL queries.
 4. **Tabular Presentation:** Query results and confirmations are converted into Pandas DataFrames and formatted using `to_markdown()` for clean terminal display.
 
@@ -154,6 +172,8 @@ python main.py
 - [x] Implement Patient Registration & Profile View.
 - [x] Implement Doctor Directory & Department Filter.
 - [x] Implement Full Appointment Lifecycle (Book, View, Cancel).
+- [x] Implement Hospital Departments Overview & Detailed Doctor Rosters.
+- [ ] Implement Laboratories, Ambulance, and Pharmacy services.
 - [ ] Develop Hospital Billing & Invoice generation module.
 - [ ] Add Emergency Services and Hospital Contact/About sections.
 - [ ] Add support for updating existing patient/doctor records.
