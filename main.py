@@ -81,32 +81,43 @@ if choose_service == 1:
     elif patient_service_choice == 2:
 
         get_id = input("\nEnter the patient's ID(PT9U..)  :  ")
-        cursor.execute('SELECT * FROM patients_info')
-        p_data = cursor.fetchall()
-        for i in range(len(p_data)):
-            for j in range(len(p_data[i])):
-                if p_data[i][j] == get_id:
-                    pInfo = pd.DataFrame({
-                        "ID" : [p_data[i][j]],
-                        "Name" : [p_data[i][j+1]],
-                        "Age" : [p_data[i][j+2]],
-                        "Gender" : [p_data[i][j+3]],
-                        "B_group" : [p_data[i][j+4]],
-                        "Address" : [p_data[i][j+5]],
-                        "Phone" : [p_data[i][j+6]]
-                    })
 
-                    print("\nInfo of patient is shown below :- \n")
-                    print(pInfo.to_markdown(index=False))
-                    print('\nThanks to visit MEDICARE Hospital...\n')
+        if  get_id.startswith("PT9U"):
 
-                    break
-                else:
-                    if j == len(p_data[i])-1 and i == len(p_data)-1:
-                        print(f'\nFetching database....\nVerifying ID....\n\nSorry!!, No patient found having ID {get_id}\n\nThanks for visiting MEDICARE Hospital digital portal!...\n')
+            try:
+                cursor.execute('SELECT * FROM patients_info')
+                p_data = cursor.fetchall()
+                for i in range(len(p_data)):
+                    for j in range(len(p_data[i])):
+                        if p_data[i][j] == get_id:
+                            pInfo = pd.DataFrame({
+                                "ID" : [p_data[i][j]],
+                                "Name" : [p_data[i][j+1]],
+                                "Age" : [p_data[i][j+2]],
+                                "Gender" : [p_data[i][j+3]],
+                                "B_group" : [p_data[i][j+4]],
+                                "Address" : [p_data[i][j+5]],
+                                "Phone" : [p_data[i][j+6]]
+                            })
 
-        cursor.close()
-        connection.close()
+                            print("\nInfo of patient is shown below :- \n")
+                            print(pInfo.to_markdown(index=False))
+                            print('\nThanks to visit MEDICARE Hospital...\n')
+
+                            break
+                        else:
+                            if j == len(p_data[i])-1 and i == len(p_data)-1:
+                                print(f'\nFetching database....\nVerifying ID....\n\nSorry!!, No patient found having ID {get_id}\n\nThanks for visiting MEDICARE Hospital digital portal!...\n')
+            except mysql.connector.Error as err:
+                print(f"\nOOPS!!, Looks like some error occured : {err}\nTry again by restarting the programme, \nThanks for choosing MEDICARE...\n")
+                exit()
+
+            finally:
+                cursor.close()
+                connection.close()
+        else:
+            print("\nInvalid ID !!, Try again by restarting the programme, \nThanks for choosing MEDICARE...\n")
+            exit()
         
     else:
         print('Invalid choice !!, Enter a valid option number...\n')
@@ -206,12 +217,12 @@ elif choose_service == 3:
         appointment_gender = input('\nEnter gender (M/F)  :  ')
         
         cursor.execute('SELECT DISTINCT Department FROM doctors_info ORDER BY Department')
-        appointment_fetchall = cursor.fetchall()
+        appointment_booking_fetchall = cursor.fetchall()
         
         if 1 <= appointment_div <= 12:
             print('\nChecking Credentials...\nChecking available Doctors...\nLooking for Vacant appointments...\nPlease wait...\n')
         
-            appointment_dep = appointment_fetchall[appointment_div - 1][0]
+            appointment_dep = appointment_booking_fetchall[appointment_div - 1][0]
         
             try:
                 cursor.execute("""SELECT Names FROM doctors_info WHERE Department = %s""",(appointment_dep,))
@@ -253,4 +264,73 @@ elif choose_service == 3:
             print('Invalid choice!!, Retstart the programme...\nThanks for choosing MEDICARE...\n')
             exit()
         
-    # elif appointment_services == 2:
+    elif appointment_services == 2: # Creating 'View appointment' Feature
+        get_appointment_id = input("\nEnter your Appointment ID  :  ")
+        if get_appointment_id.startswith("AP9U"):
+
+            try:
+                cursor.execute("SELECT ID FROM appointments")
+                x = cursor.fetchall()
+
+                for i in range(len(x)):
+                    if x[i][0] == get_appointment_id:
+                        cursor.execute("""SELECT * FROM appointments WHERE ID=%s""",(get_appointment_id,)) # Dev chauhan
+                        appointment_details_fetch = cursor.fetchall() # getting all appointment details
+
+                        print('\nFetching database...\nFetching your ID...\nPlease wait...\n\nYour appointment details are : \n')
+                        print(pd.DataFrame({
+                            "ID" : [appointment_details_fetch[0][0]],
+                            "Name of\nPatient" : [appointment_details_fetch[0][1]],
+                            "Doctor\nAppointed" : [appointment_details_fetch[0][2]],
+                            "Division" : [appointment_details_fetch[0][3]],
+                            "Date of\nappointment" : [appointment_details_fetch[0][4]]
+                        }).to_markdown(index=False))
+                        print('\nThanks for choosing MEDICARE...\n')
+                    else:
+                        if i == len(x) - 1:
+                            print(f"\nNo user with id {get_appointment_id} Found in database, Check your entered ID and try again!!, \nThanks for choosing MEDICARE...\n")
+                            exit()
+
+            except mysql.connector.Error as err:
+                print(f"\nOOPS!!, Looks like some error occured : {err}\nTry again by restarting the programme, \nThanks for choosing MEDICARE...\n")
+                exit()
+            finally:
+                cursor.close()
+                connection.close()
+
+        else:
+            print("\nInvalid ID !!, Try again by restarting the programme, \nThanks for choosing MEDICARE...\n")
+
+    elif appointment_services == 3: # Creating 'Cancel appointment' Feature
+            cancel_appointment_id = input("\nEnter your Appointment ID which is to be cancelled :  ")
+
+            if cancel_appointment_id.startswith("AP9U"):
+                try:
+                    cursor.execute("SELECT ID FROM appointments")
+                    y = cursor.fetchall()
+    
+                    for i in range(len(y)):
+                        if y[i][0] == cancel_appointment_id:
+                            cursor.execute("""DELETE FROM appointments WHERE ID=%s""",(cancel_appointment_id,)) # Dev chauhan
+
+                            connection.commit()
+                            print('\nFetching database...\nFetching your ID...\nPlease wait...\n\nYour appointment is cancelled successfully : \n')
+                            print('\nThanks for choosing MEDICARE...\n')
+                            
+                        else:
+                            if i == len(y) - 1:
+                                print(f"\nNo user with id {cancel_appointment_id} Found in database, Check your entered ID and try again!!, \nThanks for choosing MEDICARE...\n")
+                                exit()
+    
+                except mysql.connector.Error as err:
+                    print(f"\nOOPS!!, Looks like some error occured : {err}\nTry again by restarting the programme, \nThanks for choosing MEDICARE...\n")
+                    exit()
+                finally:
+                    cursor.close()
+                    connection.close()
+    
+            else:
+                print("\nInvalid ID !!, Try again by restarting the programme, \nThanks for choosing MEDICARE...\n")
+    else:
+        print('\nInvalid choice , try again by restarting the programme!!, \nThanks for choosing MEDICARE...\n')
+    

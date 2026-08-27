@@ -1,14 +1,15 @@
 # Medicare Hospital Management System
 
-This is a school project developed by **Mohit Singh(Python code writer)** and **Dev Chauhan(Database manager)**. It is a Command Line Interface (CLI) application written in Python that simulates a hospital management system. The application connects to a MySQL database to securely store, retrieve, and manage patient, doctor, and appointment records.
+This is a school project developed by **Mohit Singh (Python code writer)** and **Dev Chauhan (Database manager)**. It is a Command Line Interface (CLI) application written in Python that simulates a hospital management system. The application connects to a MySQL database to securely store, retrieve, and manage patient, doctor, and appointment records.
 
 ---
 
 ## 📊 Current Progress & Implemented Features
 
-### 1. Database Integration & Security
+### 1. Database Integration & Robust Error Handling
 - Secure database connection with `mysql.connector` using environment variables managed by `python-dotenv`.
 - Credentials remain protected and outside version control via `.env`.
+- Connection and query failures are wrapped with comprehensive `try...except...finally` blocks to ensure clean error messages and automatic connection cleanup.
 
 ### 2. Main Navigation Menu
 The central navigation hub allows users to select from various hospital services:
@@ -27,11 +28,11 @@ The central navigation hub allows users to select from various hospital services
 - **Patient Registration:**
   - Captures full patient profile: Name, Age, Gender, Blood Group, Address, and Phone Number.
   - Automatically generates a formatted unique Patient ID (e.g., `PT9U1`, `PT9U2`, etc.) based on existing records.
-  - Formats phone numbers with country code prefix (`+91`).
+  - Formats phone numbers with country code prefix (`+91 `).
   - Securely inserts records into the `patients_info` MySQL table.
 - **View Patient Details:**
-  - Search and look up patient details by entering their unique Patient ID (`PT9U..`).
-  - Retrieves patient details from the database and renders them in a formatted tabular layout using `pandas.DataFrame.to_markdown()`.
+  - Validates ID prefix (`PT9U`) before searching the database.
+  - Retrieves patient details and renders them in a formatted tabular layout using `pandas.DataFrame.to_markdown()`.
   - Includes validation and graceful notification if the ID is not found.
 
 ---
@@ -56,16 +57,22 @@ The central navigation hub allows users to select from various hospital services
     12. Urology
   - Dynamically filters and displays specialists matching the selected department.
 
-### 5. Appointments
+---
+
+### 5. Appointments Module (`Appointments`) - Fully Implemented
 - **Book an Appointment:**
-  - Collects the patient's name, age, and gender.
-  - Allows the patient to select one of the 12 clinical departments.
-  - Assigns a random doctor from the selected department.
-  - Generates a formatted appointment ID (e.g., `AP9U1`, `AP9U2`, etc.) based on existing records.
-  - Saves the appointment ID, patient name, assigned doctor, department, and booking date to the `appointments` MySQL table.
-  - Displays the booking details in a formatted markdown table after a successful booking.
-- **Planned Appointment Features:**
-  - The menu includes options to view and cancel appointments, but those operations are not implemented yet.
+  - Collects patient's name, age, gender, and selected medical department (from 12 divisions).
+  - Automatically assigns a doctor randomly from available doctors in that department using Python's `random` module.
+  - Generates a unique appointment ID (e.g., `AP9U1`, `AP9U2`, etc.).
+  - Saves the record into the `appointments` MySQL table with current date (`dt.date.today()`).
+  - Displays immediate booking confirmation in a formatted Markdown table.
+- **View Appointment Details:**
+  - Allows patients/staff to query appointment records using their unique Appointment ID (`AP9U..`).
+  - Fetches and displays patient name, appointed doctor, medical division, and appointment date in a neat table.
+  - Validates ID format and alerts if the appointment ID does not exist.
+- **Cancel Appointment:**
+  - Allows cancellation of existing appointments via Appointment ID (`AP9U..`).
+  - Validates existence, executes a SQL `DELETE` query, commits the change to the database, and confirms cancellation.
 
 ---
 
@@ -92,9 +99,12 @@ Database_name = your_database_name
 ```
 
 ### 3. Database Schema Setup
-Set up the required tables in your MySQL database:
+Set up the required tables in your MySQL database (see `new.sql`):
 
 ```sql
+CREATE DATABASE IF NOT EXISTS new_database;
+USE new_database;
+
 CREATE TABLE patients_info (
     ID VARCHAR(10) PRIMARY KEY,
     Name VARCHAR(100) NOT NULL,
@@ -106,18 +116,18 @@ CREATE TABLE patients_info (
 );
 
 CREATE TABLE doctors_info (
-    ID VARCHAR(10) PRIMARY KEY,
+    ID VARCHAR(7) PRIMARY KEY,
     Names VARCHAR(100) NOT NULL,
     Department VARCHAR(100) NOT NULL,
     Experience INT NOT NULL
 );
 
 CREATE TABLE appointments (
-    ID VARCHAR(10) PRIMARY KEY,
-    P_Name VARCHAR(100) NOT NULL,
-    Doctor VARCHAR(100) NOT NULL,
-    Division VARCHAR(100) NOT NULL,
-    date DATE NOT NULL
+    ID VARCHAR(7) PRIMARY KEY,
+    P_Name CHAR(30) NOT NULL,
+    Doctor CHAR(30) NOT NULL,
+    Division CHAR(20) NOT NULL,
+    Date DATE NOT NULL
 );
 ```
 
@@ -130,19 +140,20 @@ python main.py
 ---
 
 ## 🚀 How It Works
-1. **Launch:** Running `main.py` opens the Medicare Hospital CLI welcome banner and displays the main menu.
-2. **Interactive CLI Navigation:** Users input the numerical choice for their desired action with built-in input validation to prevent crashes.
-3. **Database Interactions:**
-  - Registrations perform parameterized `INSERT` SQL operations and commit changes.
-  - Searches and lookups execute `SELECT` SQL queries and fetch records.
-  - Appointment bookings query doctors by department, insert a new appointment, and commit the booking.
-4. **Tabular Data Presentation:** Query results and appointment confirmations are converted to Pandas DataFrames and formatted using `to_markdown()` for readable output in the terminal.
+1. **Launch:** Running `main.py` establishes a connection to MySQL, opens the Medicare Hospital CLI welcome banner, and displays the main menu.
+2. **Interactive CLI Navigation:** Users input numerical choices with built-in validation to prevent application crashes.
+3. **Database Operations:**
+   - **Insertions:** Patient registrations and appointment bookings execute parameterized `INSERT` SQL queries and commit changes.
+   - **Retrieval:** Details for patients, doctors, and appointments are retrieved using dynamic and parameterized `SELECT` SQL queries.
+   - **Deletions:** Appointment cancellations execute parameterized `DELETE` SQL queries.
+4. **Tabular Presentation:** Query results and confirmations are converted into Pandas DataFrames and formatted using `to_markdown()` for clean terminal display.
 
 ---
 
 ## 🌟 Future Roadmap
-- [x] Implement basic appointment booking.
-- [ ] Implement viewing and cancellation of appointments.
+- [x] Implement Patient Registration & Profile View.
+- [x] Implement Doctor Directory & Department Filter.
+- [x] Implement Full Appointment Lifecycle (Book, View, Cancel).
 - [ ] Develop Hospital Billing & Invoice generation module.
 - [ ] Add Emergency Services and Hospital Contact/About sections.
-- [ ] Add support for updating and deleting patient/doctor records.
+- [ ] Add support for updating existing patient/doctor records.
