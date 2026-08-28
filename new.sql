@@ -156,6 +156,29 @@ VALUES
         'The department helps patients manage chronic conditions and prevent complications.'
     ));
 
+CREATE TABLE laboratory_tests (
+    ID VARCHAR(5) PRIMARY KEY,
+    Test VARCHAR(100) NOT NULL,
+    Description VARCHAR(255) NOT NULL,
+    Charges DECIMAL(10, 2) NOT NULL,
+    Department VARCHAR(100) NOT NULL,
+    CONSTRAINT fk_laboratory_tests_department
+        FOREIGN KEY (Department) REFERENCES departments(Department_Name)
+);
+
+INSERT INTO laboratory_tests (ID, Test, Description, Charges, Department)
+VALUES
+    ('LT001', 'CBC / Complete Blood Count', 'Measures blood cells to help detect anemia, infection, and other blood disorders.', 350.00, 'Oncology'),
+    ('LT002', 'Blood Sugar', 'Measures glucose levels to screen for and monitor diabetes.', 150.00, 'Endocrinology'),
+    ('LT003', 'Lipid Profile', 'Measures cholesterol and triglycerides to assess cardiovascular risk.', 600.00, 'Cardiology'),
+    ('LT004', 'Liver Function Test', 'Checks liver enzymes and proteins to assess liver health and function.', 800.00, 'Oncology'),
+    ('LT005', 'Kidney Function Test', 'Evaluates kidney filtration and waste levels using blood and urine markers.', 700.00, 'Urology'),
+    ('LT006', 'Thyroid Profile', 'Measures thyroid hormones to identify hypoactive or overactive thyroid conditions.', 650.00, 'Endocrinology'),
+    ('LT007', 'Urine Test', 'Examines urine for infection, kidney problems, diabetes, and other conditions.', 250.00, 'Urology'),
+    ('LT008', 'X-Ray', 'Produces images of bones and internal structures to help diagnose injuries and disease.', 500.00, 'Radiology'),
+    ('LT009', 'CT Scan', 'Uses detailed cross-sectional images to examine organs, bones, and soft tissues.', 3500.00, 'Radiology'),
+    ('LT010', 'MRI', 'Uses magnetic fields to create detailed images of organs, joints, and soft tissues.', 6500.00, 'Radiology');
+
 CREATE TABLE patient_info (
     ID VARCHAR(7) PRIMARY KEY,
     Name CHAR(20) NOT NULL,

@@ -79,11 +79,8 @@ if choose_service == 1:
         print("\n\nPlease wait....\nChecking details....\nRegistration successfull\n\nThanks for choosing Medicare!!...")
 
     elif patient_service_choice == 2:
-
         get_id = input("\nEnter the patient's ID(PT9U..)  :  ")
-
         if  get_id.startswith("PT9U"):
-
             try:
                 cursor.execute('SELECT * FROM patients_info')
                 p_data = cursor.fetchall()
@@ -410,6 +407,20 @@ elif choose_service == 4:
             finally:
                 cursor.close()
                 connection.close()
-                
+
         else:
             print("Invalid choice !, Restart the programme\n\nThanks for choosing MEDICARE...\n")
+
+    # elif hospital_service_choice == 2:
+    #     try:
+    #         lab_service_choice = int(input(("\n1) View available tests\n2) Book Tests\n\nChoose as per your requirement  :  ")))
+    #     except ValueError:
+    #         print("\nInvalid input !!, Retart the programme\n\nThanks for visiting MEDICARE...\n")?
+    #         exit()
+        
+    #     if lab_service_choice == 1:
+    #         try:
+    #             choose_test = int(input("\n1) CBC / Complete Blood Count\n2) Blood Sugar\n3) Lipid Profile\n4) Liver Function Test\n5) Kidney Function Test\n6) Thyroid Profile\n7) Urine Test\n8) X-Ray\n9) CT Scan\n10) MRI\n\nChoose as per your requirement  :  "))
+    #         except ValueError:
+    #             print("\nInvalid input !!, Retart the programme\n\nThanks for visiting MEDICARE...\n")?
+    #             exit()
