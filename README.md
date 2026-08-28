@@ -1,6 +1,6 @@
 # Medicare Hospital Management System
 
-This is a school project developed by **Mohit Singh (Python code writer)** and **Dev Chauhan (Database manager)**. It is a Command Line Interface (CLI) application written in Python that simulates a hospital management system. The application connects to a MySQL database to securely store, retrieve, and manage patient, doctor, appointment, and department records.
+This is a school project developed by **Mohit Singh (Python code writer)** and **Dev Chauhan (Database manager)**. It is a Command Line Interface (CLI) application written in Python that simulates a hospital management system. The application connects to a MySQL database to securely store, retrieve, and manage patient, doctor, appointment, department, and laboratory records.
 
 ---
 
@@ -83,8 +83,12 @@ The central navigation hub allows users to select from various hospital services
     - Queries the `departments` table to show department ID (`DEP01` - `DEP12`), department name, and an in-depth clinical description.
     - Dynamically computes and displays the total number of doctors currently serving in that department.
     - Displays a live roster of available doctors in that department with their Doctor IDs, Names, and Experience (in years).
+- **Laboratories & Diagnostics:**
+  - **View Test Details:** Browse 10 diagnostic lab tests (CBC, Blood Sugar, Lipid Profile, LFT, KFT, Thyroid Profile, Urine Test, X-Ray, CT Scan, MRI) with clinical description, charges in INR, and associated medical department.
+  - **Direct Lab Test Booking:** Users can directly book diagnostic tests by providing contact details (Name, Age, Gender, Phone Number).
+  - **Booking ID Generation:** Automatically generates a unique Lab Test Booking ID (e.g., `TA9U1`, `TA9U2`, etc.) and stores records in `lab_test_bookings`.
 - **Upcoming Services:**
-  - Menu placeholders prepared for **Laboratories**, **Ambulance**, and **Pharmacy** services.
+  - Menu placeholders prepared for **Ambulance** and **Pharmacy** services.
 
 ---
 
@@ -134,6 +138,12 @@ CREATE TABLE doctors_info (
     Experience INT NOT NULL
 );
 
+CREATE TABLE departments (
+    ID VARCHAR(5) PRIMARY KEY,
+    Department_Name VARCHAR(100) NOT NULL UNIQUE,
+    Description TEXT NOT NULL
+);
+
 CREATE TABLE appointments (
     ID VARCHAR(7) PRIMARY KEY,
     P_Name CHAR(30) NOT NULL,
@@ -142,10 +152,26 @@ CREATE TABLE appointments (
     Date DATE NOT NULL
 );
 
-CREATE TABLE departments (
+CREATE TABLE laboratory_tests (
     ID VARCHAR(5) PRIMARY KEY,
-    Department_Name VARCHAR(100) NOT NULL UNIQUE,
-    Description TEXT NOT NULL
+    Test VARCHAR(100) NOT NULL,
+    Description VARCHAR(255) NOT NULL,
+    Charges DECIMAL(10, 2) NOT NULL,
+    Department VARCHAR(100) NOT NULL,
+    CONSTRAINT fk_laboratory_tests_department
+        FOREIGN KEY (Department) REFERENCES departments(Department_Name)
+);
+
+CREATE TABLE lab_test_bookings (
+    ID VARCHAR(7) PRIMARY KEY,
+    Name CHAR(30) NOT NULL,
+    Age INT NOT NULL,
+    Gender CHAR(5) NOT NULL,
+    Phone_No VARCHAR(20) NOT NULL,
+    Department VARCHAR(100) NOT NULL,
+    Date DATE NOT NULL,
+    CONSTRAINT fk_lab_test_bookings_department
+        FOREIGN KEY (Department) REFERENCES departments(Department_Name)
 );
 ```
 
@@ -161,8 +187,8 @@ python main.py
 1. **Launch:** Running `main.py` establishes a connection to MySQL, opens the Medicare Hospital CLI welcome banner, and displays the main menu.
 2. **Interactive CLI Navigation:** Users input numerical choices with built-in validation to prevent application crashes.
 3. **Database Operations:**
-   - **Insertions:** Patient registrations and appointment bookings execute parameterized `INSERT` SQL queries and commit changes.
-   - **Retrieval:** Details for patients, doctors, appointments, and departments are retrieved using dynamic and parameterized `SELECT` SQL queries.
+   - **Insertions:** Patient registrations, appointment bookings, and diagnostic lab bookings execute parameterized `INSERT` SQL queries and commit changes.
+   - **Retrieval:** Details for patients, doctors, appointments, departments, and laboratory tests are retrieved using dynamic and parameterized `SELECT` SQL queries.
    - **Deletions:** Appointment cancellations execute parameterized `DELETE` SQL queries.
 4. **Tabular Presentation:** Query results and confirmations are converted into Pandas DataFrames and formatted using `to_markdown()` for clean terminal display.
 
@@ -173,7 +199,8 @@ python main.py
 - [x] Implement Doctor Directory & Department Filter.
 - [x] Implement Full Appointment Lifecycle (Book, View, Cancel).
 - [x] Implement Hospital Departments Overview & Detailed Doctor Rosters.
-- [ ] Implement Laboratories, Ambulance, and Pharmacy services.
+- [x] Implement Laboratory Diagnostics Test Browser & Direct Test Booking.
+- [ ] Implement Ambulance and Pharmacy services.
 - [ ] Develop Hospital Billing & Invoice generation module.
 - [ ] Add Emergency Services and Hospital Contact/About sections.
 - [ ] Add support for updating existing patient/doctor records.

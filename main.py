@@ -411,16 +411,68 @@ elif choose_service == 4:
         else:
             print("Invalid choice !, Restart the programme\n\nThanks for choosing MEDICARE...\n")
 
-    # elif hospital_service_choice == 2:
-    #     try:
-    #         lab_service_choice = int(input(("\n1) View available tests\n2) Book Tests\n\nChoose as per your requirement  :  ")))
-    #     except ValueError:
-    #         print("\nInvalid input !!, Retart the programme\n\nThanks for visiting MEDICARE...\n")?
-    #         exit()
+    elif hospital_service_choice == 2:
+        try:
+            lab_service_choice = int(input(("\n1) View available tests\n2) Book Tests\n\nChoose as per your requirement  :  ")))
+        except ValueError:
+            print("\nInvalid input !!, Retart the programme\n\nThanks for visiting MEDICARE...\n")
+            exit()
         
-    #     if lab_service_choice == 1:
-    #         try:
-    #             choose_test = int(input("\n1) CBC / Complete Blood Count\n2) Blood Sugar\n3) Lipid Profile\n4) Liver Function Test\n5) Kidney Function Test\n6) Thyroid Profile\n7) Urine Test\n8) X-Ray\n9) CT Scan\n10) MRI\n\nChoose as per your requirement  :  "))
-    #         except ValueError:
-    #             print("\nInvalid input !!, Retart the programme\n\nThanks for visiting MEDICARE...\n")?
-    #             exit()
+        if lab_service_choice == 1:
+            try:
+                choose_test = int(input("\n1) CBC / Complete Blood Count\n2) Blood Sugar\n3) Lipid Profile\n4) Liver Function Test\n5) Kidney Function Test\n6) Thyroid Profile\n7) Urine Test\n8) X-Ray\n9) CT Scan\n10) MRI\n\nChoose as per your requirement  :  "))
+            except ValueError:
+                print("\nInvalid input !!, Retart the programme\n\nThanks for visiting MEDICARE...\n")
+                exit()
+
+            try:
+                cursor.execute("SELECT Test FROM laboratory_tests")
+
+                cursor.execute("""SELECT * FROM laboratory_tests WHERE Test=%s""",(cursor.fetchall()[choose_test - 1][0],))
+
+                tests_fetchall = cursor.fetchall()
+                print("\nDetails of this test are :- \n")
+
+                print(pd.DataFrame({
+                    "ID" : [tests_fetchall[0][0]],
+                    "Test\nname" : [tests_fetchall[0][1]],
+                    "Description" : [tests_fetchall[0][2]],
+                    "Charges" : ["INR " + str(tests_fetchall[0][3])],
+                    "Department" : [tests_fetchall[0][4]]
+                }).to_markdown(index=False))
+
+                try:
+                    ask_test = int(input("\nWould you like to book this test for tommorrow?\n\n1) Yes\n2) No\n\nChoose as per requirement  :  "))
+                except ValueError:
+                    print("\nInvalid input !!, Retart the programme\n\nThanks for visiting MEDICARE...\n")
+                    exit()
+
+                if ask_test == 1:
+                    print("\nBook your Lab Test now just in minutes...\n")
+                    test_cont_name = input("\nEnter your name  :  ")
+                    try:
+                        test_cont_age = int(input("\nEnter age  :  "))
+                        test_cont_phone = int(input("\nEnter phone numnber (+91)  :  "))
+                    except ValueError:
+                        print("\nInvalid input !!, Retart the programme\n\nThanks for visiting MEDICARE...\n")
+                        exit()
+                    test_cont_gender = input("\nEnter your gender (M/F)  :  ")
+
+                    cursor.execute("SELECT * FROM lab_test_bookings")
+
+                    cursor.execute("""INSERT INTO lab_test_bookings (ID , Name , Age , Gender , Phone_NO , Department , Date) VALUES (%s,%s,%s,%s,%s,%s,%s)""",(f"TA9U{len(cursor.fetchall()) + 1}" , test_cont_name , test_cont_age , test_cont_gender , "+91 " + str(test_cont_phone) , tests_fetchall[0][4] , dt.date.today()))
+
+                    connection.commit()
+                    cursor.execute("SELECT ID FROM lab_test_bookings")
+                    print(f"\nChecking details...\nChecking avaialibility...\nPlease wait...\n\nYour Lab test Booking ID is {cursor.fetchall()[len(cursor.fetchall()) - 1][0]}\n\nThanks for choosisng MEDICARE...\n")
+
+                else:
+                    print("\nThanks for visiting MEDICARE...\n")
+                    exit()
+            except mysql.connector.Error as err:
+                print(f"\nOOPS !! , looks like some error occured From our server side : {err}, please try again by restarting the programme\n\nThanks for choosing MEDICARE...\n")
+                exit()
+            finally:
+                cursor.close()
+                connection.close()
+        #

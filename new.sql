@@ -200,4 +200,17 @@ CREATE TABLE appointments (
     Date DATE NOT NULL
 );
 
+CREATE TABLE lab_test_bookings (
+    ID VARCHAR(7) PRIMARY KEY,
+    Name CHAR(30) NOT NULL,
+    Age INT NOT NULL,
+    Gender CHAR(5) NOT NULL,
+    Phone_No VARCHAR(20) NOT NULL,
+    Department VARCHAR(100) NOT NULL,
+    Date DATE NOT NULL,
+    CONSTRAINT fk_lab_test_bookings_department
+        FOREIGN KEY (Department) REFERENCES departments(Department_Name)
+);
+
 SELECT Names from doctors_info WHERE `Department`="Gynecology";
+
