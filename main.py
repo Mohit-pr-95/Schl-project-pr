@@ -510,9 +510,10 @@ elif choose_service == 4:
 
                             cursor.execute("SELECT ID FROM ambulance_record WHERE status='Available'")
                             ambulances = cursor.fetchall()
-                            ambulance_given = rnd.choice(ambulances)
+                            ambulance_given = rnd.choice(ambulances) # Giving ambulance to user randomly from available ambulances
+
                             cursor.execute("select * from ambulance_bookings")
-                            cursor.execute("""INSERT INTO ambulance_bookings (ID,Name,Ambulance) VALUES (%s,%s,%s)""",(f"AB9U{len(cursor.fetchall()) + 1}" , get_amb_name , ambulance_given[0]))
+                            cursor.execute("""INSERT INTO ambulance_bookings (ID,Name,Ambulance) VALUES (%s,%s,%s)""",(f"AB9U{len(cursor.fetchall()) + 1}" , get_amb_name , ambulance_given[0])) # updating the booking table
                             connection.commit()
                             cursor.execute("""UPDATE ambulance_record SET status='On Duty' WHERE ID=%s""",(ambulance_given[0],))
                             connection.commit()
