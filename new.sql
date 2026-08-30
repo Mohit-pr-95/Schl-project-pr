@@ -214,3 +214,37 @@ CREATE TABLE lab_test_bookings (
 
 SELECT Names from doctors_info WHERE `Department`="Gynecology";
 
+CREATE TABLE Ambulance_record (
+    ID VARCHAR(7) PRIMARY KEY,
+    Status VARCHAR(20) NOT NULL
+);
+
+INSERT INTO Ambulance_record (ID, Status)
+VALUES
+    ("AM9U1", 'Available'),
+    ("AM9U2", 'Available'),
+    ("AM9U3", 'Available'),
+    ("AM9U4", 'Available'),
+    ("AM9U5", 'Available'),
+    ("AM9U6", 'Available'),
+    ("AM9U7", 'Available'),
+    ("AM9U8", 'Available'),
+    ("AM9U9", 'Available'),
+    ("AM9U10", 'Available'),
+    ("AM9U11", 'Available'),
+    ("AM9U12", 'Available'),
+    ("AM9U13", 'Available'),
+    ("AM9U14", 'Available'),
+    ("AM9U15", 'Available'),
+    ("AM9U16", 'Available'),
+    ("AM9U17", 'Available'),
+    ("AM9U18", 'Available'),
+    ("AM9U19", 'Available'),
+    ("AM9U20", 'Available');
+
+
+CREATE TABLE ambulance_bookings (
+    ID VARCHAR(10) PRIMARY KEY,
+    Name CHAR(20) NOT NULL,
+    Ambulance VARCHAR(10) NOT NULL
+)

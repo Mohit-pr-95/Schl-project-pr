@@ -1,6 +1,6 @@
 # Medicare Hospital Management System
 
-This is a school project developed by **Mohit Singh (Python code writer)** and **Dev Chauhan (Database manager)**. It is a Command Line Interface (CLI) application written in Python that simulates a hospital management system. The application connects to a MySQL database to securely store, retrieve, and manage patient, doctor, appointment, department, and laboratory records.
+This is a school project developed by **Mohit Singh (Python code writer)** and **Dev Chauhan (Database manager)**. It is a Command Line Interface (CLI) application written in Python that simulates a hospital management system. The application connects to a MySQL database to securely store, retrieve, and manage patient, doctor, appointment, department, laboratory, and ambulance records.
 
 ---
 
@@ -87,8 +87,16 @@ The central navigation hub allows users to select from various hospital services
   - **View Test Details:** Browse 10 diagnostic lab tests (CBC, Blood Sugar, Lipid Profile, LFT, KFT, Thyroid Profile, Urine Test, X-Ray, CT Scan, MRI) with clinical description, charges in INR, and associated medical department.
   - **Direct Lab Test Booking:** Users can directly book diagnostic tests by providing contact details (Name, Age, Gender, Phone Number).
   - **Booking ID Generation:** Automatically generates a unique Lab Test Booking ID (e.g., `TA9U1`, `TA9U2`, etc.) and stores records in `lab_test_bookings`.
+- **Ambulance Portal (`Ambulance Portal`):**
+  - **View Ambulance Fleet Status:** Queries the `ambulance_record` table and displays all 20 ambulances (`AM9U1` - `AM9U20`) with their real-time availability status (`Available` / `On Duty`) in a tabular format.
+  - **Request an Ambulance:**
+    - Name input validation ensuring valid alphabetical character entry.
+    - Dynamically queries available ambulances (`Status = 'Available'`).
+    - Randomly assigns an available vehicle from the fleet using `random.choice`.
+    - Generates a unique ambulance booking ID (e.g., `AB9U1`, `AB9U2`, etc.) and logs the booking in `ambulance_bookings`.
+    - Automatically updates the vehicle's status to `'On Duty'` in the database.
 - **Upcoming Services:**
-  - Menu placeholders prepared for **Ambulance** and **Pharmacy** services.
+  - Menu placeholders prepared for **Pharmacy** services.
 
 ---
 
@@ -173,6 +181,17 @@ CREATE TABLE lab_test_bookings (
     CONSTRAINT fk_lab_test_bookings_department
         FOREIGN KEY (Department) REFERENCES departments(Department_Name)
 );
+
+CREATE TABLE ambulance_record (
+    ID VARCHAR(7) PRIMARY KEY,
+    Status VARCHAR(20) NOT NULL
+);
+
+CREATE TABLE ambulance_bookings (
+    ID VARCHAR(10) PRIMARY KEY,
+    Name CHAR(20) NOT NULL,
+    Ambulance VARCHAR(10) NOT NULL
+);
 ```
 
 ### 4. Run the Application
@@ -187,8 +206,9 @@ python main.py
 1. **Launch:** Running `main.py` establishes a connection to MySQL, opens the Medicare Hospital CLI welcome banner, and displays the main menu.
 2. **Interactive CLI Navigation:** Users input numerical choices with built-in validation to prevent application crashes.
 3. **Database Operations:**
-   - **Insertions:** Patient registrations, appointment bookings, and diagnostic lab bookings execute parameterized `INSERT` SQL queries and commit changes.
-   - **Retrieval:** Details for patients, doctors, appointments, departments, and laboratory tests are retrieved using dynamic and parameterized `SELECT` SQL queries.
+   - **Insertions:** Patient registrations, appointment bookings, diagnostic lab test bookings, and ambulance dispatch requests execute parameterized `INSERT` SQL queries and commit changes.
+   - **Updates:** Dispatched ambulances have their statuses automatically updated from `'Available'` to `'On Duty'` via `UPDATE` SQL queries.
+   - **Retrieval:** Details for patients, doctors, appointments, departments, laboratory tests, and ambulances are retrieved using dynamic and parameterized `SELECT` SQL queries.
    - **Deletions:** Appointment cancellations execute parameterized `DELETE` SQL queries.
 4. **Tabular Presentation:** Query results and confirmations are converted into Pandas DataFrames and formatted using `to_markdown()` for clean terminal display.
 
@@ -200,7 +220,8 @@ python main.py
 - [x] Implement Full Appointment Lifecycle (Book, View, Cancel).
 - [x] Implement Hospital Departments Overview & Detailed Doctor Rosters.
 - [x] Implement Laboratory Diagnostics Test Browser & Direct Test Booking.
-- [ ] Implement Ambulance and Pharmacy services.
+- [x] Implement Ambulance Fleet Status Viewer & Automatic Dispatch Booking.
+- [ ] Implement Pharmacy services.
 - [ ] Develop Hospital Billing & Invoice generation module.
 - [ ] Add Emergency Services and Hospital Contact/About sections.
 - [ ] Add support for updating existing patient/doctor records.
