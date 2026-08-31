@@ -79,22 +79,27 @@ The central navigation hub allows users to select from various hospital services
 ### 6. Hospital Services (`Hospital services`)
 - **Departments Explorer:**
   - **View All Departments:** Displays a numbered master list of all 12 hospital departments.
-  - **Detailed Department Info:**
-    - Queries the `departments` table to show department ID (`DEP01` - `DEP12`), department name, and an in-depth clinical description.
+  - **Detailed Department Info & Consultation Pricing:**
+    - Queries the `departments` table to show department ID (`DEP01` - `DEP12`), department name, consultation fees, and an in-depth clinical description.
     - Dynamically computes and displays the total number of doctors currently serving in that department.
     - Displays a live roster of available doctors in that department with their Doctor IDs, Names, and Experience (in years).
 - **Laboratories & Diagnostics:**
   - **View Test Details:** Browse 10 diagnostic lab tests (CBC, Blood Sugar, Lipid Profile, LFT, KFT, Thyroid Profile, Urine Test, X-Ray, CT Scan, MRI) with clinical description, charges in INR, and associated medical department.
-  - **Direct Lab Test Booking:** Users can directly book diagnostic tests by providing contact details (Name, Age, Gender, Phone Number).
-  - **Booking ID Generation:** Automatically generates a unique Lab Test Booking ID (e.g., `TA9U1`, `TA9U2`, etc.) and stores records in `lab_test_bookings`.
+  - **Automated Patient Linking & Test Booking:**
+    - Collects complete patient information (Name, Age, Gender, Blood Group, Address, Phone Number).
+    - Automatically creates/links a patient profile in `patients_info`.
+    - Schedules the lab test for the following day (`date + 1 day`).
+    - Records `patient_ID`, test charges, and auto-generated booking ID (`TA9U<number>`) into `lab_test_bookings`.
+    - Informs patient regarding the hospital's lab cancellation policy.
 - **Ambulance Portal (`Ambulance Portal`):**
   - **View Ambulance Fleet Status:** Queries the `ambulance_record` table and displays all 20 ambulances (`AM9U1` - `AM9U20`) with their real-time availability status (`Available` / `On Duty`) in a tabular format.
-  - **Request an Ambulance:**
+  - **Request an Ambulance with Fixed Dispatch Fee:**
     - Name input validation ensuring valid alphabetical character entry.
     - Dynamically queries available ambulances (`Status = 'Available'`).
     - Randomly assigns an available vehicle from the fleet using `random.choice`.
-    - Generates a unique ambulance booking ID (e.g., `AB9U1`, `AB9U2`, etc.) and logs the booking in `ambulance_bookings`.
-    - Automatically updates the vehicle's status to `'On Duty'` in the database.
+    - Generates a unique ambulance booking ID (e.g., `AB9U1`, `AB9U2`, etc.).
+    - Logs booking in `ambulance_bookings` with fixed standard ambulance fee (INR 250.00).
+    - Automatically updates the vehicle's status to `'On Duty'` in `ambulance_record`.
 - **Upcoming Services:**
   - Menu placeholders prepared for **Pharmacy** services.
 
@@ -149,7 +154,8 @@ CREATE TABLE doctors_info (
 CREATE TABLE departments (
     ID VARCHAR(5) PRIMARY KEY,
     Department_Name VARCHAR(100) NOT NULL UNIQUE,
-    Description TEXT NOT NULL
+    Description TEXT NOT NULL,
+    `consulting fee (INR)` DECIMAL(10, 2) NOT NULL DEFAULT 0.00
 );
 
 CREATE TABLE appointments (
@@ -178,6 +184,8 @@ CREATE TABLE lab_test_bookings (
     Phone_No VARCHAR(20) NOT NULL,
     Department VARCHAR(100) NOT NULL,
     Date DATE NOT NULL,
+    patient_ID VARCHAR(10),
+    Test_charges DECIMAL(10, 2),
     CONSTRAINT fk_lab_test_bookings_department
         FOREIGN KEY (Department) REFERENCES departments(Department_Name)
 );
@@ -190,7 +198,8 @@ CREATE TABLE ambulance_record (
 CREATE TABLE ambulance_bookings (
     ID VARCHAR(10) PRIMARY KEY,
     Name CHAR(20) NOT NULL,
-    Ambulance VARCHAR(10) NOT NULL
+    Ambulance VARCHAR(10) NOT NULL,
+    Fee DECIMAL(10, 2) NOT NULL DEFAULT 250.00
 );
 ```
 
@@ -206,7 +215,7 @@ python main.py
 1. **Launch:** Running `main.py` establishes a connection to MySQL, opens the Medicare Hospital CLI welcome banner, and displays the main menu.
 2. **Interactive CLI Navigation:** Users input numerical choices with built-in validation to prevent application crashes.
 3. **Database Operations:**
-   - **Insertions:** Patient registrations, appointment bookings, diagnostic lab test bookings, and ambulance dispatch requests execute parameterized `INSERT` SQL queries and commit changes.
+   - **Insertions:** Patient registrations, appointment bookings, diagnostic lab test bookings (with patient record cross-linking), and ambulance dispatch requests execute parameterized `INSERT` SQL queries and commit changes.
    - **Updates:** Dispatched ambulances have their statuses automatically updated from `'Available'` to `'On Duty'` via `UPDATE` SQL queries.
    - **Retrieval:** Details for patients, doctors, appointments, departments, laboratory tests, and ambulances are retrieved using dynamic and parameterized `SELECT` SQL queries.
    - **Deletions:** Appointment cancellations execute parameterized `DELETE` SQL queries.
@@ -218,9 +227,9 @@ python main.py
 - [x] Implement Patient Registration & Profile View.
 - [x] Implement Doctor Directory & Department Filter.
 - [x] Implement Full Appointment Lifecycle (Book, View, Cancel).
-- [x] Implement Hospital Departments Overview & Detailed Doctor Rosters.
-- [x] Implement Laboratory Diagnostics Test Browser & Direct Test Booking.
-- [x] Implement Ambulance Fleet Status Viewer & Automatic Dispatch Booking.
+- [x] Implement Hospital Departments Overview, Pricing & Detailed Doctor Rosters.
+- [x] Implement Laboratory Diagnostics Test Browser, Automated Patient Linking & Next-Day Scheduling.
+- [x] Implement Ambulance Fleet Status Viewer, Automatic Dispatch Booking & Fee Logging.
 - [ ] Implement Pharmacy services.
 - [ ] Develop Hospital Billing & Invoice generation module.
 - [ ] Add Emergency Services and Hospital Contact/About sections.

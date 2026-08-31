@@ -248,3 +248,25 @@ CREATE TABLE ambulance_bookings (
     Name CHAR(20) NOT NULL,
     Ambulance VARCHAR(10) NOT NULL
 )
+
+ALTER TABLE departments
+ADD COLUMN `consulting fee (INR)` DECIMAL(10,2) NOT NULL DEFAULT 0;
+
+UPDATE departments
+SET `consulting fee (INR)` = CASE Department_Name
+    WHEN 'Cardiology' THEN 1200.00
+    WHEN 'Neurology' THEN 1500.00
+    WHEN 'Orthopedics' THEN 1800.00
+    WHEN 'Dermatology' THEN 1000.00
+    WHEN 'Pediatrics' THEN 900.00
+    WHEN 'Gynecology' THEN 1300.00
+    WHEN 'Oncology' THEN 2200.00
+    WHEN 'Radiology' THEN 1100.00
+    WHEN 'Psychiatry' THEN 1600.00
+    WHEN 'Ophthalmology' THEN 1200.00
+    WHEN 'Urology' THEN 1700.00
+    WHEN 'Endocrinology' THEN 1400.00
+    ELSE 0.00
+END;
+
+SELECT * FROM departments;

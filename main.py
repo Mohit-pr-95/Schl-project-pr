@@ -76,7 +76,7 @@ if choose_service == 1:
             connection.close() # Closing server connection from script 
         
 
-        print("\n\nPlease wait....\nChecking details....\nRegistration successfull\n\nThanks for choosing Medicare!!...")
+        print("\n\nPlease wait....\nChecking details....\nRegistration successfull\n\nThanks for choosing Medicare!!...\n")
 
     elif patient_service_choice == 2:
         get_id = input("\nEnter the patient's ID(PT9U..)  :  ")
@@ -208,10 +208,14 @@ elif choose_service == 3:
         try:
                 appointment_age = int(input("\nEnter age  :  "))
                 appointment_div = int(input('\n1) Cardiology\n2) Dermatology\n3) Endocrinology\n4) Gynecology\n5) Neurology\n6) Oncology\n7) Ophthalmology\n8) Orthopedics\n9) Pediatrics\n10) Psychiatry\n11) Radiology\n12) Urology\n\nChoose Your category  :  '))
+                appointment_phone = int(input("\nEnter your phone number  :  "))
+                
         except ValueError:
-                print('Invalid choice !!, restart the programme...')
+                print('\nInvalid choice !!, restart the programme...\n')
                 exit()
         appointment_gender = input('\nEnter gender (M/F)  :  ')
+        appointment_bg = input("\nEnter your Blood group  :  ")
+        appointment_adress = input("\nEnter your address  :  ")
         
         cursor.execute('SELECT DISTINCT Department FROM doctors_info ORDER BY Department')
         appointment_booking_fetchall = cursor.fetchall()
@@ -222,30 +226,44 @@ elif choose_service == 3:
             appointment_dep = appointment_booking_fetchall[appointment_div - 1][0]
         
             try:
+
+                cursor.execute("SELECT * FROM patients_info")
+                cursor.execute("""INSERT INTO patients_info (ID, Name, Age, Gender, B_goup, Address, Phone) VALUES (%s, %s, %s, %s, %s, %s, %s)""",(f"PT9U{len(cursor.fetchall()) + 1}", appointment_name , appointment_age ,appointment_gender , appointment_bg , appointment_adress, "+91 " + str(appointment_phone)))
+                connection.commit()
+
                 cursor.execute("""SELECT Names FROM doctors_info WHERE Department = %s""",(appointment_dep,))
         
                 doctors_list = cursor.fetchall()
                 cursor.execute('SELECT * FROM appointments')
+                a = cursor.fetchall()
+
+                cursor.execute("SELECT ID FROM patients_info")
+                b = cursor.fetchall()
+
+                cursor.execute("""SELECT consulting_fee FROM departments WHERE Department_name = %s""" , (appointment_dep,))
+                fee = cursor.fetchall()[0]
         
-                cursor.execute("""INSERT INTO appointments(ID,P_Name,Doctor,Division,date) VALUES (%s,%s,%s,%s,%s)""",(f'AP9U{len(cursor.fetchall()) + 1}' , appointment_name , rnd.choice(doctors_list)[0] , appointment_dep , dt.date.today()))
+                cursor.execute("""INSERT INTO appointments(ID,P_Name,Doctor,Division,date,patient_ID,Consulting_fee) VALUES (%s,%s,%s,%s,%s,%s,%s)""",(f'AP9U{len(a) + 1}' , appointment_name , rnd.choice(doctors_list)[0] , appointment_dep , dt.date.today() , b[len(b) - 1][0]) , fee)
         
                 connection.commit()
 
                 cursor.execute('SELECT Doctor From appointments')
 
                 doctor = cursor.fetchall()[len(cursor.fetchall()) - 1][0]
-        
-                cursor.execute('SELECT * FROM appointments')
-        
+                
+                cursor.execute('SELECT patient_ID FROM appointments')
+                c = cursor.fetchall()
                 print(f'\nAppointment Booked successfully !! , Details are shown below :\n\n')
         
                 print(pd.DataFrame({
-                    "ID\n(Remember it)" : [f"AP9U{len(cursor.fetchall())}"],
+                    "ID\n(Remember it)" : [f"AP9U{len(c)}"],
                     "Patient" : [appointment_name],
                     "Age" : [appointment_age],
                     "Division" : [appointment_dep],
                     "Doctor appointed" : [doctor],
-                    "Date of\nAppointment" : [dt.date.today()]
+                    "Consulting\nFee(INR)" : [fee],
+                    "Date of\nAppointment" : [dt.date.today()],
+                    "Patient ID\n(Remember it)" : [c[len(c) - 1][0]]
                     }).to_markdown(index=False))
         
                 print("\nThanks for choosing MEDICARE...\n")
@@ -280,7 +298,9 @@ elif choose_service == 3:
                             "Name of\nPatient" : [appointment_details_fetch[0][1]],
                             "Doctor\nAppointed" : [appointment_details_fetch[0][2]],
                             "Division" : [appointment_details_fetch[0][3]],
-                            "Date of\nappointment" : [appointment_details_fetch[0][4]]
+                            "Date of\nappointment" : [appointment_details_fetch[0][4]],
+                            "Patient\nID" : [appointment_details_fetch[0][5]],
+                            "Consulting\nfee(INR)" : [appointment_details_fetch[0][6]]
                         }).to_markdown(index=False))
                         print('\nThanks for choosing MEDICARE...\n')
                     else:
@@ -414,7 +434,7 @@ elif choose_service == 4:
     elif hospital_service_choice == 2:
             
         try:
-            choose_test = int(input("\n1) CBC / Complete Blood Count\n2) Blood Sugar\n3) Lipid Profile\n4) Liver Function Test\n5) Kidney Function Test\n6) Thyroid Profile\n7) Urine Test\n8) X-Ray\n9) CT Scan\n10) MRI\n\nChoose as per your requirement  :  "))
+            choose_test = int(input("\nChoose medical Division of your test :-\n\n1) CBC / Complete Blood Count\n2) Blood Sugar\n3) Lipid Profile\n4) Liver Function Test\n5) Kidney Function Test\n6) Thyroid Profile\n7) Urine Test\n8) X-Ray\n9) CT Scan\n10) MRI\n\nChoose as per your requirement  :  "))
         except ValueError:
             print("\nInvalid input !!, Retart the programme\n\nThanks for visiting MEDICARE...\n")
             exit()
@@ -443,20 +463,34 @@ elif choose_service == 4:
 
             if ask_test == 1:
                 print("\nBook your Lab Test now just in minutes...\n")
-                test_cont_name = input("\nEnter your name  :  ")
+                test_cont_name = input("\nEnter Patient's name  :  ")
                 try:
                     test_cont_age = int(input("\nEnter age  :  "))
                     test_cont_phone = int(input("\nEnter phone numnber (+91)  :  "))
                 except ValueError:
                     print("\nInvalid input !!, Retart the programme\n\nThanks for visiting MEDICARE...\n")
                     exit()
-                test_cont_gender = input("\nEnter your gender (M/F)  :  ")
+                test_cont_gender = input("\nEnter Patient's gender (M/F)  :  ")
+                test_cont_bg = input("\nEnter Patient's blood group  :  ")
+                test_cont_add = input("\nEnter address  :  ")
 
                 cursor.execute("SELECT * FROM lab_test_bookings")
+                length = len(cursor.fetchall())
 
-                cursor.execute("""INSERT INTO lab_test_bookings (ID , Name , Age , Gender , Phone_NO , Department , Date) VALUES (%s,%s,%s,%s,%s,%s,%s)""",(f"TA9U{len(cursor.fetchall()) + 1}" , test_cont_name , test_cont_age , test_cont_gender , "+91 " + str(test_cont_phone) , tests_fetchall[0][4] , dt.date.today() + dt.timedelta(days=1)))
+                cursor.execute("SELECT * FROM patients_info")
+                cursor.execute("""INSERT INTO patients_info (ID, Name, Age, Gender, B_goup, Address, Phone) VALUES (%s, %s, %s, %s, %s, %s, %s)""",(f"PT9U{len(cursor.fetchall()) + 1}", test_cont_name , test_cont_age , test_cont_gender , test_cont_bg ,test_cont_add, "+91 " + str(test_cont_phone)))
+                connection.commit()
+
+                cursor.execute("SELECT ID FROM patients_info")
+                p_id_for_test = cursor.fetchall()
+
+                cursor.execute("""SELECT Charges FROM laboratory_tests WHERE Test = %s""" , (tests_fetchall[0][4],))
+                charges = cursor.fetchall()[0][0]
+
+                cursor.execute("""INSERT INTO lab_test_bookings (ID , Name , Age , Gender , Phone_NO , Department , Date , patient_ID , Test_charges) VALUES (%s,%s,%s,%s,%s,%s,%s)""",(f"TA9U{length + 1}" , test_cont_name , test_cont_age , test_cont_gender , "+91 " + str(test_cont_phone) , tests_fetchall[0][4] , dt.date.today() + dt.timedelta(days=1) , p_id_for_test[len(p_id_for_test) - 1][0] , charges))
 
                 connection.commit()
+
                 cursor.execute("SELECT ID FROM lab_test_bookings")
 
                 print(f"\nChecking details...\nChecking avaialibility...\nPlease wait...\n\nYour Lab test Booking ID is {cursor.fetchall()[len(cursor.fetchall()) - 1][0]}\n\nDigital portal of MEDICARE doesn't allows cancellation of lab test booking , so please visit nearest MEDICARE branch to cancel your lab test booking\n\nThanks for choosisng MEDICARE...\n")
@@ -513,7 +547,7 @@ elif choose_service == 4:
                             ambulance_given = rnd.choice(ambulances) # Giving ambulance to user randomly from available ambulances
 
                             cursor.execute("select * from ambulance_bookings")
-                            cursor.execute("""INSERT INTO ambulance_bookings (ID,Name,Ambulance) VALUES (%s,%s,%s)""",(f"AB9U{len(cursor.fetchall()) + 1}" , get_amb_name , ambulance_given[0])) # updating the booking table
+                            cursor.execute("""INSERT INTO ambulance_bookings (ID,Name,Ambulance,Fee) VALUES (%s,%s,%s,%s)""",(f"AB9U{len(cursor.fetchall()) + 1}" , get_amb_name , ambulance_given[0] , 250.0)) # updating the booking table
                             connection.commit()
                             cursor.execute("""UPDATE ambulance_record SET status='On Duty' WHERE ID=%s""",(ambulance_given[0],))
                             connection.commit()
