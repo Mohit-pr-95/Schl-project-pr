@@ -549,8 +549,10 @@ elif choose_service == 4:
                             cursor.execute("select * from ambulance_bookings")
                             cursor.execute("""INSERT INTO ambulance_bookings (ID,Name,Ambulance,Fee) VALUES (%s,%s,%s,%s)""",(f"AB9U{len(cursor.fetchall()) + 1}" , get_amb_name , ambulance_given[0] , 250.0)) # updating the booking table
                             connection.commit()
+
                             cursor.execute("""UPDATE ambulance_record SET status='On Duty' WHERE ID=%s""",(ambulance_given[0],))
                             connection.commit()
+                            
                             print(f"\nChecking availablity of ambulance...\n\nFetching database...\n\nSuccessfully booked a ambualnce \nAmbulance ID is {ambulance_given[0]}\nThanks for chhoosing MEDICARE...\n")
                         except mysql.connector.Error as err:
                             print(f"\nOOPS !! , looks like some error occured From our server side : {err}, please try again by restarting the programme\n\nThanks for choosing MEDICARE...\n")
