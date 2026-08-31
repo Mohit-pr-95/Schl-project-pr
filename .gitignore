@@ -2,3 +2,5 @@
 *.pyc
 *.pyo
 *.pyd
+*-LAPTOP-*.sql
+*-LAPTOP-*.md

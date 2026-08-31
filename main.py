@@ -9,6 +9,7 @@ import mysql.connector # Importing SQL for table database managament through pyt
 import pandas as pd
 import datetime as dt
 import random as rnd
+import shutil
 
 load_dotenv()
 
@@ -217,7 +218,7 @@ elif choose_service == 3:
         appointment_bg = input("\nEnter your Blood group  :  ")
         appointment_adress = input("\nEnter your address  :  ")
         
-        cursor.execute('SELECT DISTINCT Department FROM doctors_info ORDER BY Department')
+        cursor.execute('SELECT Department_Name FROM departments ORDER BY Department_Name')
         appointment_booking_fetchall = cursor.fetchall()
         
         if 1 <= appointment_div <= 12:
@@ -232,27 +233,26 @@ elif choose_service == 3:
                 connection.commit()
 
                 cursor.execute("""SELECT Names FROM doctors_info WHERE Department = %s""",(appointment_dep,))
-        
                 doctors_list = cursor.fetchall()
+
                 cursor.execute('SELECT * FROM appointments')
                 a = cursor.fetchall()
 
                 cursor.execute("SELECT ID FROM patients_info")
                 b = cursor.fetchall()
 
-                cursor.execute("""SELECT consulting_fee FROM departments WHERE Department_name = %s""" , (appointment_dep,))
-                fee = cursor.fetchall()[0]
-        
-                cursor.execute("""INSERT INTO appointments(ID,P_Name,Doctor,Division,date,patient_ID,Consulting_fee) VALUES (%s,%s,%s,%s,%s,%s,%s)""",(f'AP9U{len(a) + 1}' , appointment_name , rnd.choice(doctors_list)[0] , appointment_dep , dt.date.today() , b[len(b) - 1][0]) , fee)
-        
+                cursor.execute("""SELECT consulting_fee FROM departments WHERE Department_Name = %s""" , (appointment_dep,))
+                fee = cursor.fetchall()[0][0]
+
+                cursor.execute("""INSERT INTO appointments (ID,P_Name,Doctor,Division,Date,patient_ID,Consulting_fee) VALUES (%s,%s,%s,%s,%s,%s,%s)""",(f'AP9U{len(a) + 1}' , appointment_name , rnd.choice(doctors_list)[0] , appointment_dep , dt.date.today() + dt.timedelta(days=1) , b[len(b) - 1][0] , fee))
                 connection.commit()
 
                 cursor.execute('SELECT Doctor From appointments')
-
                 doctor = cursor.fetchall()[len(cursor.fetchall()) - 1][0]
                 
                 cursor.execute('SELECT patient_ID FROM appointments')
                 c = cursor.fetchall()
+
                 print(f'\nAppointment Booked successfully !! , Details are shown below :\n\n')
         
                 print(pd.DataFrame({
@@ -566,4 +566,42 @@ elif choose_service == 4:
         else:
             print("\nPrint Invalid choice !, Try again  by restarting the programme\n\nThanks for choosing MEDICARE...\n")
 
-            # Welcome Dev chauhan.....
+    else:
+        print("Inavalid choice !, Please restart the programe\n\nThanks for visiting MEDICARE...\n")
+        exit()
+elif choose_service == 5:
+    print("\n\nWelcome to \"billing portal\"\n")
+    get_billing_ID = input("\nEnter your Patient ID  :  ")
+
+    if get_billing_ID.startswith("PT9U"):
+        # try:
+        cursor.execute("""SELECT * FROM patients_info WHERE ID = %s""" , (get_billing_ID,))
+        p = cursor.fetchall()
+
+        cursor.execute("""SELECT Consulting_fee FROM appointments WHERE patient_ID=%s""",(get_billing_ID,))
+        appointment_charge = cursor.fetchall()
+        
+
+        # except mysql.connector.Error as err:
+        print(f"\nNo Info of patient having ID {get_billing_ID} found in our database... \nTry again by restarting the programme\n\nThanks to visit MEDICARE... \n")
+
+        try:
+            cursor.execute("""SELECT Test_charges FROM lab_test_bookings WHERE patient_ID = %s""" , (get_billing_ID,))
+            lab_charges = cursor.fetchall()
+
+        except mysql.connector.Error:
+            print(f"\nNo Info of patient having ID {get_billing_ID} found in our database...\nTry again by restarting the programme\n\nThanks to visit MEDICARE... \n")
+
+        print("\n\nYour bill is :-\n")
+
+        print(pd.DataFrame({
+            "Patient ID" : [get_billing_ID],
+            "Appointment charges" : ["INR " + str(appointment_charge[0][0])]
+            #"Lab test\ncharges" : ["INR " + str(lab_charges[0])]
+        }).to_markdown(index=False))
+
+        print("\nNOTE : This bill includes only Consulting and lab test Fee , \nPharmacy bill would be given to you in hand by store...\n\nThanks for visiting MEDICARE...\n")
+
+    else:
+        print("\nInvalid ID !, restart the programme\n\nThanks for visiting MEDICARE...\n")
+        exit()

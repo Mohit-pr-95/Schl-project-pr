@@ -1,236 +1,386 @@
-# Medicare Hospital Management System
+# 🏥 Medicare Hospital Management System
 
-This is a school project developed by **Mohit Singh (Python code writer)** and **Dev Chauhan (Database manager)**. It is a Command Line Interface (CLI) application written in Python that simulates a hospital management system. The application connects to a MySQL database to securely store, retrieve, and manage patient, doctor, appointment, department, laboratory, and ambulance records.
+[![Python](https://img.shields.io/badge/Python-3.8%2B-blue.svg?logo=python&logoColor=white)](https://www.python.org/)
+[![MySQL](https://img.shields.io/badge/MySQL-8.0%2B-4479A1.svg?logo=mysql&logoColor=white)](https://www.mysql.com/)
+[![Pandas](https://img.shields.io/badge/Pandas-DataFrames-150458.svg?logo=pandas&logoColor=white)](https://pandas.pydata.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Project Status](https://img.shields.io/badge/Status-Active%20Development-success.svg)](#)
 
----
-
-## 📊 Current Progress & Implemented Features
-
-### 1. Database Integration & Robust Error Handling
-- Secure database connection with `mysql.connector` using environment variables managed by `python-dotenv`.
-- Credentials remain protected and outside version control via `.env`.
-- Connection and query failures are wrapped with comprehensive `try...except...finally` blocks to ensure clean error messages and automatic connection cleanup.
-
-### 2. Main Navigation Menu
-The central navigation hub allows users to select from various hospital services:
-- **1) Patient portal**
-- **2) Doctor's portal**
-- **3) Appointments**
-- **4) More services (Hospital services)**
-- **5) Billing** *(Upcoming)*
-- **6) Emergency information** *(Upcoming)*
-- **7) About the hospital** *(Upcoming)*
-- **8) Exit**
+> **A comprehensive Command Line Interface (CLI) Hospital Management System** developed in Python with a robust MySQL relational database backend. Designed to streamline patient registrations, doctor directories, appointment scheduling, laboratory diagnostics, ambulance dispatching, and patient billing.
 
 ---
 
-### 3. Patient Portal (`Patient's Portal`)
-- **Patient Registration:**
-  - Captures full patient profile: Name, Age, Gender, Blood Group, Address, and Phone Number.
-  - Automatically generates a formatted unique Patient ID (e.g., `PT9U1`, `PT9U2`, etc.) based on existing records.
-  - Formats phone numbers with country code prefix (`+91 `).
-  - Securely inserts records into the `patients_info` MySQL table.
-- **View Patient Details:**
-  - Validates ID prefix (`PT9U`) before searching the database.
-  - Retrieves patient details and renders them in a formatted tabular layout using `pandas.DataFrame.to_markdown()`.
-  - Includes validation and graceful notification if the ID is not found.
+## 👥 Authors & Project Information
+
+* **Python Application Developer:** Mohit Singh
+* **Database Architect & Manager:** Dev Chauhan
+* **Project Context:** Informatics Practices / Computer Science Project
+* **Development Date:** August 2026
 
 ---
 
-### 4. Doctor's Portal (`Doctor's Portal`)
-- **View All Doctors:**
-  - Queries `doctors_info` table to retrieve all staff doctors.
-  - Displays doctor IDs, names, specializations, and years of experience in a clean markdown table.
-- **Search Doctors by Department:**
-  - Interactive selection menu supporting **12 clinical departments**:
-    1. Cardiology
-    2. Dermatology
-    3. Endocrinology
-    4. Gynecology
-    5. Neurology
-    6. Oncology
-    7. Ophthalmology
-    8. Orthopedics
-    9. Pediatrics
-    10. Psychiatry
-    11. Radiology
-    12. Urology
-  - Dynamically filters and displays specialists matching the selected department.
+## 📑 Table of Contents
+
+- [Overview](#-overview)
+- [Key Features & Modules](#-key-features--modules)
+  - [1. Patient Portal](#1-patient-portal)
+  - [2. Doctor's Portal](#2-doctors-portal)
+  - [3. Appointments Management](#3-appointments-management)
+  - [4. Hospital Services Explorer](#4-hospital-services-explorer)
+  - [5. Billing & Invoice Summary](#5-billing--invoice-summary)
+  - [6. Robust Error Handling & Security](#6-robust-error-handling--security)
+- [System Architecture & Workflow](#-system-architecture--workflow)
+- [Database Schema & Architecture](#-database-schema--architecture)
+- [Project Directory Structure](#-project-directory-structure)
+- [Installation & Setup Guide](#-installation--setup-guide)
+  - [Prerequisites](#prerequisites)
+  - [Step 1: Clone Repository](#step-1-clone-repository)
+  - [Step 2: Set Up Virtual Environment](#step-2-set-up-virtual-environment)
+  - [Step 3: Install Dependencies](#step-3-install-dependencies)
+  - [Step 4: Configure Environment Variables](#step-4-configure-environment-variables)
+  - [Step 5: Initialize MySQL Database](#step-5-initialize-mysql-database)
+  - [Step 6: Run the Application](#step-6-run-the-application)
+- [CLI Interface & Sample Walkthrough](#-cli-interface--sample-walkthrough)
+- [Technology Stack](#-technology-stack)
+- [Development Roadmap](#-development-roadmap)
+- [Contributing](#-contributing)
+- [License](#-license)
 
 ---
 
-### 5. Appointments Module (`Appointments`)
-- **Book an Appointment:**
-  - Collects patient's name, age, gender, and selected medical department (from 12 divisions).
-  - Automatically assigns a doctor randomly from available doctors in that department using Python's `random` module.
-  - Generates a unique appointment ID (e.g., `AP9U1`, `AP9U2`, etc.).
-  - Saves the record into the `appointments` MySQL table with current date (`dt.date.today()`).
-  - Displays immediate booking confirmation in a formatted Markdown table.
-- **View Appointment Details:**
-  - Allows patients/staff to query appointment records using their unique Appointment ID (`AP9U..`).
-  - Fetches and displays patient name, appointed doctor, medical division, and appointment date in a neat table.
-  - Validates ID format and alerts if the appointment ID does not exist.
-- **Cancel Appointment:**
-  - Allows cancellation of existing appointments via Appointment ID (`AP9U..`).
-  - Validates existence, executes a SQL `DELETE` query, commits the change to the database, and confirms cancellation.
+## 📖 Overview
+
+**Medicare Hospital Management System** is an interactive, menu-driven CLI application designed to automate hospital operations. Built on top of Python 3 and MySQL, the application enables staff, patients, and administrators to interact seamlessly with hospital records while ensuring data validation, relational integrity, and tabular formatting.
+
+### Primary Objectives:
+- Provide an intuitive, crash-resistant terminal user interface.
+- Maintain persistent records across 8 relational tables in MySQL.
+- Automate identifier generation (`PT9U...` for patients, `AP9U...` for appointments, `TA9U...` for lab tests, `AB9U...` for ambulances).
+- Output query results using structured Markdown tables rendered through `pandas` and `tabulate`.
 
 ---
 
-### 6. Hospital Services (`Hospital services`)
-- **Departments Explorer:**
-  - **View All Departments:** Displays a numbered master list of all 12 hospital departments.
-  - **Detailed Department Info & Consultation Pricing:**
-    - Queries the `departments` table to show department ID (`DEP01` - `DEP12`), department name, consultation fees, and an in-depth clinical description.
-    - Dynamically computes and displays the total number of doctors currently serving in that department.
-    - Displays a live roster of available doctors in that department with their Doctor IDs, Names, and Experience (in years).
-- **Laboratories & Diagnostics:**
-  - **View Test Details:** Browse 10 diagnostic lab tests (CBC, Blood Sugar, Lipid Profile, LFT, KFT, Thyroid Profile, Urine Test, X-Ray, CT Scan, MRI) with clinical description, charges in INR, and associated medical department.
-  - **Automated Patient Linking & Test Booking:**
-    - Collects complete patient information (Name, Age, Gender, Blood Group, Address, Phone Number).
-    - Automatically creates/links a patient profile in `patients_info`.
-    - Schedules the lab test for the following day (`date + 1 day`).
-    - Records `patient_ID`, test charges, and auto-generated booking ID (`TA9U<number>`) into `lab_test_bookings`.
-    - Informs patient regarding the hospital's lab cancellation policy.
-- **Ambulance Portal (`Ambulance Portal`):**
-  - **View Ambulance Fleet Status:** Queries the `ambulance_record` table and displays all 20 ambulances (`AM9U1` - `AM9U20`) with their real-time availability status (`Available` / `On Duty`) in a tabular format.
-  - **Request an Ambulance with Fixed Dispatch Fee:**
-    - Name input validation ensuring valid alphabetical character entry.
-    - Dynamically queries available ambulances (`Status = 'Available'`).
-    - Randomly assigns an available vehicle from the fleet using `random.choice`.
-    - Generates a unique ambulance booking ID (e.g., `AB9U1`, `AB9U2`, etc.).
-    - Logs booking in `ambulance_bookings` with fixed standard ambulance fee (INR 250.00).
-    - Automatically updates the vehicle's status to `'On Duty'` in `ambulance_record`.
-- **Upcoming Services:**
-  - Menu placeholders prepared for **Pharmacy** services.
+## ✨ Key Features & Modules
+
+```
+===================================================================================
+                             Medicare Hospital Welcomes you                          
+===================================================================================
+
+1) Patient portal
+2) Doctor's portal
+3) Appointments
+4) More services (Hospital services)
+5) Billing
+6) Emergency information (Upcoming)
+7) About the hospital (Upcoming)
+8) Exit
+```
+
+### 1. Patient Portal
+* **Patient Registration:**
+  * Collects comprehensive patient profiles: Full Name, Age, Gender (`M`/`F`), Blood Group (`A+`, `O+`, `B+`, etc.), Residential Address, and Contact Number.
+  * Formats phone numbers automatically with country code (`+91 `).
+  * Automatically assigns a sequential, unique identifier (e.g., `PT9U1`, `PT9U2`, ...).
+  * Inserts records into the `patients_info` MySQL table.
+* **View Patient Records:**
+  * Validates patient ID prefix format (`PT9U`).
+  * Queries database and displays complete profile details in a clean tabular view.
+  * Gracefully informs user if the specified ID is not found.
 
 ---
 
-## ⚙️ Setup Instructions
+### 2. Doctor's Portal
+* **View Full Medical Staff:**
+  * Retrieves and renders complete directory of 50 in-house specialist doctors.
+  * Displays Doctor ID (`DR9P1` – `DR9P50`), Doctor Name, Clinical Department, and Years of Experience.
+* **Search Doctors by Medical Division:**
+  * Interactive filtering across **12 distinct medical departments**:
+    1. *Cardiology* | 2. *Dermatology* | 3. *Endocrinology* | 4. *Gynecology*
+    5. *Neurology* | 6. *Oncology* | 7. *Ophthalmology* | 8. *Orthopedics*
+    9. *Pediatrics* | 10. *Psychiatry* | 11. *Radiology* | 12. *Urology*
+  * Dynamically filters and displays specialists matching the requested department.
+
+---
+
+### 3. Appointments Management
+* **Book an Appointment:**
+  * Collects patient demographics and clinical division required.
+  * Automatically registers or links the patient record in `patients_info`.
+  * Dynamically queries doctors in the selected specialty and assigns an available specialist at random (`random.choice`).
+  * Fetches the department consultation fee (`departments.consulting_fee`).
+  * Schedules the appointment for the next calendar day (`today + 1 day`).
+  * Generates unique Appointment ID (e.g., `AP9U1`) and outputs a full confirmation receipt.
+* **View Appointment Status:**
+  * Queries appointment records by Appointment ID (`AP9U...`).
+  * Displays patient name, allocated doctor, department division, appointment date, patient ID, and consulting fee.
+* **Cancel Appointment:**
+  * Allows cancellation of existing appointments using the Appointment ID.
+  * Executes a parameterized SQL `DELETE` query, commits changes, and provides instant confirmation.
+
+---
+
+### 4. Hospital Services Explorer
+
+#### 🏢 Departments Directory
+* **View All Departments:** Lists all 12 operational departments in alphabetical order.
+* **Department Details & Roster:**
+  * Fetches detailed clinical overview, scope of care, and consultation pricing (`DEP01` – `DEP12`).
+  * Dynamically calculates and displays the total number of doctors on staff in that department.
+  * Renders a live roster of available specialists with their IDs, names, and experience.
+
+#### 🔬 Diagnostics & Laboratory Tests
+* **Browse Test Catalog:**
+  * Details 10 standard diagnostic tests with descriptions, pricing in INR, and associated departments:
+    * `LT001`: **CBC / Complete Blood Count** (₹350)
+    * `LT002`: **Blood Sugar** (₹150)
+    * `LT003`: **Lipid Profile** (₹600)
+    * `LT004`: **Liver Function Test (LFT)** (₹800)
+    * `LT005`: **Kidney Function Test (KFT)** (₹700)
+    * `LT006`: **Thyroid Profile** (₹650)
+    * `LT007`: **Urine Test** (₹250)
+    * `LT008`: **X-Ray** (₹500)
+    * `LT009`: **CT Scan** (₹3,500)
+    * `LT010`: **MRI Scan** (₹6,500)
+* **Book Lab Test:**
+  * Enrolls patient details, schedules test for the next day, and creates a booking record (`TA9U...`).
+  * Informs the patient of the booking reference and clinic cancellation policy.
+
+#### 🚑 Ambulance Fleet & Emergency Dispatch
+* **Fleet Availability Viewer:**
+  * Displays live operational status for 20 hospital ambulances (`AM9U1` – `AM9U20`) as `Available` or `On Duty`.
+* **Instant Ambulance Dispatch:**
+  * Validates requester's name against invalid non-alphabetical characters.
+  * Finds currently available ambulances and randomly allocates an active unit.
+  * Logs the booking under `ambulance_bookings` (`AB9U...`) with a standard fixed dispatch fee (₹250.00).
+  * Automatically switches vehicle status in `ambulance_record` to `'On Duty'`.
+
+---
+
+### 5. Billing & Invoice Summary
+* Prompts for Patient ID (`PT9U...`).
+* Retrieves consultation charges from `appointments` and diagnostic test charges from `lab_test_bookings`.
+* Generates an itemized bill showing consolidated patient dues.
+
+---
+
+### 6. Robust Error Handling & Security
+* **Environment Protection:** Database credentials are securely loaded from a local `.env` file and excluded from version control via `.gitignore`.
+* **SQL Injection Prevention:** Uses parameterized SQL queries (`%s` placeholders with value tuples).
+* **Input Validation:** Enforces integer type validation and string constraints to prevent runtime crashes.
+* **Resource Cleanup:** All database transactions use `try...except...finally` blocks to guarantee cursor and connection closure.
+
+---
+
+## 🏗️ System Architecture & Workflow
+
+```mermaid
+flowchart TD
+    Start([Launch main.py]) --> LoadEnv[Load Environment Variables .env]
+    LoadEnv --> ConnectDB[(Connect to MySQL Server)]
+    ConnectDB --> MainMenu{Main Menu}
+
+    MainMenu -->|Option 1| PatientPortal[Patient Portal]
+    PatientPortal --> RegPatient[Register Patient -> PT9U#]
+    PatientPortal --> ViewPatient[View Patient Details]
+
+    MainMenu -->|Option 2| DoctorPortal[Doctor's Portal]
+    DoctorPortal --> ViewAllDocs[View All 50 Doctors]
+    DoctorPortal --> SearchDeptDocs[Filter Doctors by 12 Departments]
+
+    MainMenu -->|Option 3| ApptModule[Appointments Module]
+    ApptModule --> BookAppt[Book Appointment -> Assign Doctor + Calc Fee]
+    ApptModule --> ViewAppt[View Appointment by AP9U#]
+    ApptModule --> CancelAppt[Cancel Appointment]
+
+    MainMenu -->|Option 4| Services[Hospital Services]
+    Services --> Depts[Departments Directory & Staff Roster]
+    Services --> Labs[Diagnostic Labs: Browse & Book Tests -> TA9U#]
+    Services --> Amb[Ambulance: View Fleet & Dispatch Unit -> AB9U#]
+
+    MainMenu -->|Option 5| Billing[Billing: Generate Itemized Bill by PT9U#]
+    MainMenu -->|Option 8| Exit([Exit Program])
+```
+
+---
+
+## 🗄️ Database Schema & Architecture
+
+The database `new_database` consists of 8 interconnected tables:
+
+| Table Name | Primary Key | Description | Key Fields |
+| :--- | :--- | :--- | :--- |
+| `patients_info` | `ID` (`VARCHAR(10)`) | Stores registered patient demographic profiles | `ID`, `Name`, `Age`, `Gender`, `B_goup`, `Address`, `Phone` |
+| `doctors_info` | `ID` (`VARCHAR(7)`) | Contains list of 50 specialist doctors | `ID`, `Names`, `Department`, `Experience` |
+| `departments` | `ID` (`VARCHAR(5)`) | 12 hospital departments with descriptions & fees | `ID`, `Department_Name`, `Description`, `consulting_fee` |
+| `appointments` | `ID` (`VARCHAR(7)`) | Patient appointment bookings & assignments | `ID`, `P_Name`, `Doctor`, `Division`, `Date`, `patient_ID`, `Consulting_fee` |
+| `laboratory_tests` | `ID` (`VARCHAR(5)`) | Catalog of 10 available diagnostic lab tests | `ID`, `Test`, `Description`, `Charges`, `Department` |
+| `lab_test_bookings`| `ID` (`VARCHAR(7)`) | Bookings for laboratory diagnostic tests | `ID`, `Name`, `Age`, `Gender`, `Phone_No`, `Department`, `Date`, `patient_ID`, `Test_charges` |
+| `ambulance_record` | `ID` (`VARCHAR(7)`) | Fleet record of 20 ambulance vehicles | `ID`, `Status` (`Available` / `On Duty`) |
+| `ambulance_bookings`| `ID` (`VARCHAR(10)`)| Dispatch logs for booked ambulances | `ID`, `Name`, `Ambulance`, `Fee` |
+
+---
+
+## 📁 Project Directory Structure
+
+```plaintext
+Schl-project-pr/
+├── .env                       # Database credentials (kept locally, ignored by Git)
+├── .env.example               # Example environment variable template
+├── .gitignore                 # Specifies intentionally untracked files
+├── main.py                    # Main executable Python CLI application
+├── new.sql                    # MySQL Database schema definition and seed data
+├── README.md                  # Project documentation (this file)
+├── test.py                    # Internal testing / helper script
+├── IP-project_original.docx   # Original project documentation report
+└── IP_Project_edited.docx     # Edited project documentation report
+```
+
+---
+
+## ⚙️ Installation & Setup Guide
 
 ### Prerequisites
-- **Python 3.x**
-- **MySQL Server** installed and running
+- **Python 3.8 or higher** installed on your system. ([Download Python](https://www.python.org/downloads/))
+- **MySQL Server 8.0 or higher** installed and running locally or remotely. ([Download MySQL](https://dev.mysql.com/downloads/mysql/))
 
-### 1. Install Dependencies
-Install all necessary Python packages:
+---
+
+### Step 1: Clone Repository
+```bash
+git clone https://github.com/Mohit-pr-95/Schl-project-pr.git
+cd Schl-project-pr
+```
+
+---
+
+### Step 2: Set Up Virtual Environment (Recommended)
+```bash
+# Windows (PowerShell / Command Prompt)
+python -m venv venv
+venv\Scripts\activate
+
+# macOS / Linux
+python3 -m venv venv
+source venv/bin/activate
+```
+
+---
+
+### Step 3: Install Dependencies
+Install all required libraries via `pip`:
 ```bash
 pip install mysql-connector-python pandas python-dotenv tabulate
 ```
-*(Note: `tabulate` is required by Pandas to output markdown-formatted tables.)*
 
-### 2. Configure Environment Variables
-Create a `.env` file in the root of the project directory (ensure this file is ignored by Git):
+> **Note:** `tabulate` is required by `pandas.DataFrame.to_markdown()` for terminal table formatting.
+
+---
+
+### Step 4: Configure Environment Variables
+Create a `.env` file in the project root directory:
+
 ```env
 Database_host = localhost
 Database_user = root
-Database_pass = your_database_password_here
-Database_name = your_database_name
+Database_pass = your_mysql_password
+Database_name = new_database
 ```
 
-### 3. Database Schema Setup
-Set up the required tables and data in your MySQL database (see `new.sql`):
+---
 
-```sql
-CREATE DATABASE IF NOT EXISTS new_database;
-USE new_database;
+### Step 5: Initialize MySQL Database
+Open your MySQL client / command line and execute the `new.sql` script to set up the database, create tables, and populate seed data:
 
-CREATE TABLE patients_info (
-    ID VARCHAR(10) PRIMARY KEY,
-    Name VARCHAR(100) NOT NULL,
-    Age INT NOT NULL,
-    Gender VARCHAR(10) NOT NULL,
-    B_goup VARCHAR(10) NOT NULL,
-    Address VARCHAR(255) NOT NULL,
-    Phone VARCHAR(20) NOT NULL
-);
-
-CREATE TABLE doctors_info (
-    ID VARCHAR(7) PRIMARY KEY,
-    Names VARCHAR(100) NOT NULL,
-    Department VARCHAR(100) NOT NULL,
-    Experience INT NOT NULL
-);
-
-CREATE TABLE departments (
-    ID VARCHAR(5) PRIMARY KEY,
-    Department_Name VARCHAR(100) NOT NULL UNIQUE,
-    Description TEXT NOT NULL,
-    `consulting fee (INR)` DECIMAL(10, 2) NOT NULL DEFAULT 0.00
-);
-
-CREATE TABLE appointments (
-    ID VARCHAR(7) PRIMARY KEY,
-    P_Name CHAR(30) NOT NULL,
-    Doctor CHAR(30) NOT NULL,
-    Division CHAR(20) NOT NULL,
-    Date DATE NOT NULL
-);
-
-CREATE TABLE laboratory_tests (
-    ID VARCHAR(5) PRIMARY KEY,
-    Test VARCHAR(100) NOT NULL,
-    Description VARCHAR(255) NOT NULL,
-    Charges DECIMAL(10, 2) NOT NULL,
-    Department VARCHAR(100) NOT NULL,
-    CONSTRAINT fk_laboratory_tests_department
-        FOREIGN KEY (Department) REFERENCES departments(Department_Name)
-);
-
-CREATE TABLE lab_test_bookings (
-    ID VARCHAR(7) PRIMARY KEY,
-    Name CHAR(30) NOT NULL,
-    Age INT NOT NULL,
-    Gender CHAR(5) NOT NULL,
-    Phone_No VARCHAR(20) NOT NULL,
-    Department VARCHAR(100) NOT NULL,
-    Date DATE NOT NULL,
-    patient_ID VARCHAR(10),
-    Test_charges DECIMAL(10, 2),
-    CONSTRAINT fk_lab_test_bookings_department
-        FOREIGN KEY (Department) REFERENCES departments(Department_Name)
-);
-
-CREATE TABLE ambulance_record (
-    ID VARCHAR(7) PRIMARY KEY,
-    Status VARCHAR(20) NOT NULL
-);
-
-CREATE TABLE ambulance_bookings (
-    ID VARCHAR(10) PRIMARY KEY,
-    Name CHAR(20) NOT NULL,
-    Ambulance VARCHAR(10) NOT NULL,
-    Fee DECIMAL(10, 2) NOT NULL DEFAULT 250.00
-);
+```bash
+# Using MySQL CLI
+mysql -u root -p < new.sql
 ```
 
-### 4. Run the Application
-Start the program by executing:
+Alternatively, open `new.sql` in **MySQL Workbench**, **DBeaver**, or **VS Code Database Extension** and run the entire script.
+
+---
+
+### Step 6: Run the Application
+Run the primary script:
 ```bash
 python main.py
 ```
 
 ---
 
-## 🚀 How It Works
-1. **Launch:** Running `main.py` establishes a connection to MySQL, opens the Medicare Hospital CLI welcome banner, and displays the main menu.
-2. **Interactive CLI Navigation:** Users input numerical choices with built-in validation to prevent application crashes.
-3. **Database Operations:**
-   - **Insertions:** Patient registrations, appointment bookings, diagnostic lab test bookings (with patient record cross-linking), and ambulance dispatch requests execute parameterized `INSERT` SQL queries and commit changes.
-   - **Updates:** Dispatched ambulances have their statuses automatically updated from `'Available'` to `'On Duty'` via `UPDATE` SQL queries.
-   - **Retrieval:** Details for patients, doctors, appointments, departments, laboratory tests, and ambulances are retrieved using dynamic and parameterized `SELECT` SQL queries.
-   - **Deletions:** Appointment cancellations execute parameterized `DELETE` SQL queries.
-4. **Tabular Presentation:** Query results and confirmations are converted into Pandas DataFrames and formatted using `to_markdown()` for clean terminal display.
+## 💻 CLI Interface & Sample Walkthrough
+
+### 1. Doctor Directory Preview
+```markdown
+| ID     | Names           | Specialization   | Experience (Years) |
+|:-------|:----------------|:-----------------|:-------------------|
+| DR9P1  | Aarav Mehta     | Cardiology       | 12                 |
+| DR9P2  | Diya Sharma     | Neurology        | 8                  |
+| DR9P3  | Rohan Kapoor    | Orthopedics      | 15                 |
+| DR9P4  | Anaya Verma     | Dermatology      | 6                  |
+| DR9P5  | Vivaan Malhotra | Pediatrics       | 10                 |
+```
+
+### 2. Appointment Booking Confirmation
+```markdown
+| ID (Remember it) | Patient    | Age | Division   | Doctor appointed | Consulting Fee(INR) | Date of Appointment | Patient ID (Remember it) |
+|:-----------------|:-----------|:----|:-----------|:-----------------|:--------------------|:--------------------|:-------------------------|
+| AP9U1            | John Doe   | 34  | Cardiology | Aarav Mehta      | 1200.00             | 2026-09-01          | PT9U1                    |
+```
+
+### 3. Ambulance Fleet Viewer
+```markdown
+| ID     | Status    |
+|:-------|:----------|
+| AM9U1  | Available |
+| AM9U2  | Available |
+| AM9U3  | On Duty   |
+| AM9U4  | Available |
+```
 
 ---
 
-## 🌟 Future Roadmap
-- [x] Implement Patient Registration & Profile View.
-- [x] Implement Doctor Directory & Department Filter.
-- [x] Implement Full Appointment Lifecycle (Book, View, Cancel).
-- [x] Implement Hospital Departments Overview, Pricing & Detailed Doctor Rosters.
-- [x] Implement Laboratory Diagnostics Test Browser, Automated Patient Linking & Next-Day Scheduling.
-- [x] Implement Ambulance Fleet Status Viewer, Automatic Dispatch Booking & Fee Logging.
-- [ ] Implement Pharmacy services.
-- [ ] Develop Hospital Billing & Invoice generation module.
-- [ ] Add Emergency Services and Hospital Contact/About sections.
-- [ ] Add support for updating existing patient/doctor records.
+## 🛠️ Technology Stack
+
+| Component | Technology | Purpose |
+| :--- | :--- | :--- |
+| **Language** | Python 3.x | Core application logic and CLI interface |
+| **Database** | MySQL | Relational database management system |
+| **Connector** | `mysql-connector-python` | Python-to-MySQL database driver |
+| **Data Formatting** | `pandas` + `tabulate` | Transforming SQL query tuples into Markdown tables |
+| **Environment Mgmt** | `python-dotenv` | Secure loading of database credentials |
+| **Standard Libraries** | `datetime`, `random`, `os`, `shutil` | Date calculations, random assignment, OS interactions |
+
+---
+
+## 🚀 Development Roadmap
+
+- [x] **Patient Portal:** Registration, patient ID generation (`PT9U...`), and record retrieval.
+- [x] **Doctor Portal:** Directory of 50 doctors across 12 clinical specialties with department filter.
+- [x] **Appointments Module:** Complete lifecycle (Booking with random specialist allocation, ID tracking, cancellation).
+- [x] **Departments Explorer:** Complete medical overview, consulting fee structure, and doctor counts.
+- [x] **Laboratory & Diagnostics:** Catalog of 10 tests, pricing, and next-day appointment scheduling.
+- [x] **Ambulance Dispatch:** Real-time fleet tracking of 20 vehicles, auto-dispatch, and fee logging.
+- [x] **Billing System:** Consolidated consultation and laboratory expense invoicing by Patient ID.
+- [ ] **Pharmacy Portal:** Medicine inventory, stock tracker, and prescription dispensing.
+- [ ] **Emergency Contact & Information Module:** Rapid triage contact directory and emergency guidelines.
+- [ ] **Data Modification:** Update capabilities for existing patient and doctor records.
+- [ ] **Graphical User Interface (GUI):** Desktop GUI with Tkinter / PyQt or Web UI with Flask/FastAPI.
+
+---
+
+## 🤝 Contributing
+
+Contributions, bug reports, and suggestions are welcome!
+1. Fork the repository.
+2. Create your feature branch (`git checkout -b feature/NewFeature`).
+3. Commit your changes (`git commit -m 'Add NewFeature'`).
+4. Push to the branch (`git push origin feature/NewFeature`).
+5. Open a Pull Request.
+
+---
+
+## 📄 License
+
+This project is created for educational and school project demonstration purposes. Released under the [MIT License](https://opensource.org/licenses/MIT).

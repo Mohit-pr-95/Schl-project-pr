@@ -269,4 +269,3 @@ SET `consulting fee (INR)` = CASE Department_Name
     ELSE 0.00
 END;
 
-SELECT * FROM departments;
