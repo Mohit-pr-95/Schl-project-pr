@@ -105,6 +105,45 @@ def book_appointment():
 
 # --------------------------------------------------------------------------------------------------------- #
 
+def book_lab_test():
+    print("\nBook your Lab Test now just in minutes...\n")
+    test_cont_name = input("\nEnter Patient's name  :  ")
+    try:
+        test_cont_age = int(input("\nEnter age  :  "))
+        test_cont_phone = int(input("\nEnter phone numnber (+91)  :  "))
+    except ValueError:
+        print("\nInvalid input !!, Retart the programme\n\nThanks for visiting MEDICARE...\n")
+        exit()
+    test_cont_gender = input("\nEnter Patient's gender (M/F)  :  ")
+    test_cont_bg = input("\nEnter Patient's blood group  :  ")
+    test_cont_add = input("\nEnter address  :  ")
+
+    try:
+        cursor.execute("SELECT * FROM lab_test_bookings")
+        length = len(cursor.fetchall())
+    
+        cursor.execute("SELECT * FROM patients_info")
+        cursor.execute("""INSERT INTO patients_info (ID, Name, Age, Gender, B_goup, Address, Phone) VALUES (%s, %s, %s, %s, %s, %s, %s)""",(f"PT9U{len(cursor.fetchall()) + 1}", test_cont_name , test_cont_age , test_cont_gender , test_cont_bg ,test_cont_add, "+91 " + str(test_cont_phone)))
+        connection.commit()
+    
+        cursor.execute("SELECT ID FROM patients_info")
+        p_id_for_test = cursor.fetchall()
+    
+        cursor.execute("""SELECT Charges FROM laboratory_tests WHERE Test = %s""" , (tests_fetchall[0][4],))
+        charges = cursor.fetchall()[0][0]
+    
+        cursor.execute("""INSERT INTO lab_test_bookings (ID , Name , Age , Gender , Phone_NO , Department , Date , patient_ID , Test_charges) VALUES (%s,%s,%s,%s,%s,%s,%s)""",(f"TA9U{length + 1}" , test_cont_name , test_cont_age , test_cont_gender , "+91 " + str(test_cont_phone) , tests_fetchall[0][4] , dt.date.today() + dt.timedelta(days=1) , p_id_for_test[len(p_id_for_test) - 1][0] , charges))
+    
+        connection.commit()
+    
+        cursor.execute("SELECT ID FROM lab_test_bookings")
+    
+        print(f"\nChecking details...\nChecking avaialibility...\nPlease wait...\n\nYour Lab test Booking ID is {cursor.fetchall()[len(cursor.fetchall()) - 1][0]}\n\nDigital portal of MEDICARE doesn't allows cancellation of lab test booking , so please visit nearest MEDICARE branch to cancel your lab test booking\n\nThanks for choosisng MEDICARE...\n")
+
+    except mysql.connector.Error as err:
+        print("\nOOPS!, Looks like some error occured \nTry agian bhy restarting the programme\n\nThanks for visiting MEDICARE...\n")
+        exit()
+
 print("\n===================================================================================")
 print("                             Medicare Hospital Welcomes you                          ")
 print("===================================================================================\n")
@@ -284,7 +323,7 @@ elif choose_service == 3:
 
     if appointment_services == 1:
 
-        ask_prev_booking = input("\nDo you have any previous Patient ID  :  ")
+        ask_prev_booking = input("\nDo you have any previous Patient ID ? (Y/N)  :   ")
 
         if ask_prev_booking.lower() == "y":
             take_prev_id = input("\nEnter that ID  :  ")
@@ -483,43 +522,25 @@ elif choose_service == 4:
                 print("\nInvalid input !!, Retart the programme\n\nThanks for visiting MEDICARE...\n")
                 exit()
 
-            if ask_test == 1:
-                print("\nBook your Lab Test now just in minutes...\n")
-                test_cont_name = input("\nEnter Patient's name  :  ")
-                try:
-                    test_cont_age = int(input("\nEnter age  :  "))
-                    test_cont_phone = int(input("\nEnter phone numnber (+91)  :  "))
-                except ValueError:
-                    print("\nInvalid input !!, Retart the programme\n\nThanks for visiting MEDICARE...\n")
+            ask_prev_test = input("\nDo you have any previous patient ID ? (Y/N)  :  ")
+
+            if ask_prev_test.lower() == "y" or ask_prev_test.lower() == "yes":
+                take_prev_test_id = input("\nEnter that ID  :  ")
+
+                if take_prev_test_id.startswith("PT9U"):
+                    cursor.execute("""SELECT patient_ID FROM lab_test_bookings WHERE patient_ID = %s""")
+
+                    if len(cursor.fetchall()) != 0:
+                        print("Cancel previous test booking for new one \n\nThanks for visiting MEDICARE...\n")
+                        exit()
+                    else:
+                        book_lab_test
+                else:
+                    print("\nInvalid ID , try again by retstarting the programme\n\nThanks for visiting MEDICARE...\n")
                     exit()
-                test_cont_gender = input("\nEnter Patient's gender (M/F)  :  ")
-                test_cont_bg = input("\nEnter Patient's blood group  :  ")
-                test_cont_add = input("\nEnter address  :  ")
-
-                cursor.execute("SELECT * FROM lab_test_bookings")
-                length = len(cursor.fetchall())
-
-                cursor.execute("SELECT * FROM patients_info")
-                cursor.execute("""INSERT INTO patients_info (ID, Name, Age, Gender, B_goup, Address, Phone) VALUES (%s, %s, %s, %s, %s, %s, %s)""",(f"PT9U{len(cursor.fetchall()) + 1}", test_cont_name , test_cont_age , test_cont_gender , test_cont_bg ,test_cont_add, "+91 " + str(test_cont_phone)))
-                connection.commit()
-
-                cursor.execute("SELECT ID FROM patients_info")
-                p_id_for_test = cursor.fetchall()
-
-                cursor.execute("""SELECT Charges FROM laboratory_tests WHERE Test = %s""" , (tests_fetchall[0][4],))
-                charges = cursor.fetchall()[0][0]
-
-                cursor.execute("""INSERT INTO lab_test_bookings (ID , Name , Age , Gender , Phone_NO , Department , Date , patient_ID , Test_charges) VALUES (%s,%s,%s,%s,%s,%s,%s)""",(f"TA9U{length + 1}" , test_cont_name , test_cont_age , test_cont_gender , "+91 " + str(test_cont_phone) , tests_fetchall[0][4] , dt.date.today() + dt.timedelta(days=1) , p_id_for_test[len(p_id_for_test) - 1][0] , charges))
-
-                connection.commit()
-
-                cursor.execute("SELECT ID FROM lab_test_bookings")
-
-                print(f"\nChecking details...\nChecking avaialibility...\nPlease wait...\n\nYour Lab test Booking ID is {cursor.fetchall()[len(cursor.fetchall()) - 1][0]}\n\nDigital portal of MEDICARE doesn't allows cancellation of lab test booking , so please visit nearest MEDICARE branch to cancel your lab test booking\n\nThanks for choosisng MEDICARE...\n")
-
             else:
-                print("\nThanks for visiting MEDICARE...\n")
-                exit()
+                book_lab_test
+            
         except mysql.connector.Error as err:
             print(f"\nOOPS !! , looks like some error occured From our server side : {err}, please try again by restarting the programme\n\nThanks for choosing MEDICARE...\n")
             exit()
