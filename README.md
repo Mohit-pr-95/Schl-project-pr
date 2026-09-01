@@ -6,7 +6,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Project Status](https://img.shields.io/badge/Status-Active%20Development-success.svg)](#)
 
-> **A comprehensive Command Line Interface (CLI) Hospital Management System** developed in Python with a robust MySQL relational database backend. Designed to streamline patient registrations, doctor directories, appointment scheduling, laboratory diagnostics, ambulance dispatching, and patient billing.
+> **A comprehensive Command Line Interface (CLI) Hospital Management System** developed in Python with a robust MySQL relational database backend. Designed to streamline patient registrations, doctor directories, appointment scheduling with double-booking prevention, laboratory diagnostics, ambulance dispatching, and dynamic patient billing.
 
 ---
 
@@ -27,7 +27,7 @@
   - [2. Doctor's Portal](#2-doctors-portal)
   - [3. Appointments Management](#3-appointments-management)
   - [4. Hospital Services Explorer](#4-hospital-services-explorer)
-  - [5. Billing & Invoice Summary](#5-billing--invoice-summary)
+  - [5. Billing & Invoice Generation](#5-billing--invoice-generation)
   - [6. Robust Error Handling & Security](#6-robust-error-handling--security)
 - [System Architecture & Workflow](#-system-architecture--workflow)
 - [Database Schema & Architecture](#-database-schema--architecture)
@@ -50,11 +50,12 @@
 
 ## 📖 Overview
 
-**Medicare Hospital Management System** is an interactive, menu-driven CLI application designed to automate hospital operations. Built on top of Python 3 and MySQL, the application enables staff, patients, and administrators to interact seamlessly with hospital records while ensuring data validation, relational integrity, and tabular formatting.
+**Medicare Hospital Management System** is an interactive, menu-driven CLI application designed to automate day-to-day hospital operations. Built on top of Python 3 and MySQL, the application enables staff, patients, and administrators to interact seamlessly with hospital records while ensuring data validation, relational integrity, business logic enforcement, and tabular formatting.
 
 ### Primary Objectives:
 - Provide an intuitive, crash-resistant terminal user interface.
 - Maintain persistent records across 8 relational tables in MySQL.
+- Enforce validation rules (e.g., active appointment check before re-booking, alphabetical name checks for ambulance dispatch).
 - Automate identifier generation (`PT9U...` for patients, `AP9U...` for appointments, `TA9U...` for lab tests, `AB9U...` for ambulances).
 - Output query results using structured Markdown tables rendered through `pandas` and `tabulate`.
 
@@ -104,9 +105,12 @@
 ---
 
 ### 3. Appointments Management
-* **Book an Appointment:**
+* **Existing Patient Verification & Double-Booking Prevention:**
+  * Verifies if a user already holds a Patient ID (`PT9U...`).
+  * Queries active appointments in the database to prevent duplicate active bookings, advising the patient to either cancel their pending appointment first or proceed with new credentials.
+* **Book an Appointment (`book_appointment`):**
   * Collects patient demographics and clinical division required.
-  * Automatically registers or links the patient record in `patients_info`.
+  * Registers or links the patient record in `patients_info`.
   * Dynamically queries doctors in the selected specialty and assigns an available specialist at random (`random.choice`).
   * Fetches the department consultation fee (`departments.consulting_fee`).
   * Schedules the appointment for the next calendar day (`today + 1 day`).
@@ -157,10 +161,17 @@
 
 ---
 
-### 5. Billing & Invoice Summary
+### 5. Billing & Invoice Generation
 * Prompts for Patient ID (`PT9U...`).
-* Retrieves consultation charges from `appointments` and diagnostic test charges from `lab_test_bookings`.
-* Generates an itemized bill showing consolidated patient dues.
+* Dynamically fetches:
+  * **Doctor Consultation Fees** from `appointments`.
+  * **Diagnostic Lab Test Charges** from `lab_test_bookings`.
+* Automatically evaluates and handles all billing scenarios:
+  * *Appointment Only*: Defaults lab test fees to `₹0.00` and calculates total.
+  * *Lab Test Only*: Defaults appointment fees to `₹0.00` and calculates total.
+  * *Combined Dues*: Sums consultation and diagnostic charges into a final grand total.
+  * *Zero Dues*: Outputs a clean `₹0.00` total balance if no active charges exist.
+* Renders an itemized, markdown-formatted billing receipt.
 
 ---
 
@@ -189,9 +200,11 @@ flowchart TD
     DoctorPortal --> SearchDeptDocs[Filter Doctors by 12 Departments]
 
     MainMenu -->|Option 3| ApptModule[Appointments Module]
-    ApptModule --> BookAppt[Book Appointment -> Assign Doctor + Calc Fee]
+    ApptModule --> CheckPrev{Previous Patient ID?}
+    CheckPrev -->|Yes & Has Active Appt| BlockDoubleBooking[Alert: Cancel Existing Appt First]
+    CheckPrev -->|No / No Active Appt| BookAppt[book_appointment -> Assign Doctor + Fee]
     ApptModule --> ViewAppt[View Appointment by AP9U#]
-    ApptModule --> CancelAppt[Cancel Appointment]
+    ApptModule --> CancelAppt[Cancel Appointment via SQL DELETE]
 
     MainMenu -->|Option 4| Services[Hospital Services]
     Services --> Depts[Departments Directory & Staff Roster]
@@ -199,6 +212,8 @@ flowchart TD
     Services --> Amb[Ambulance: View Fleet & Dispatch Unit -> AB9U#]
 
     MainMenu -->|Option 5| Billing[Billing: Generate Itemized Bill by PT9U#]
+    Billing --> CalcDues[Compute Appointment + Lab Dues -> Total Balance]
+    
     MainMenu -->|Option 8| Exit([Exit Program])
 ```
 
@@ -278,7 +293,7 @@ pip install mysql-connector-python pandas python-dotenv tabulate
 ---
 
 ### Step 4: Configure Environment Variables
-Create a `.env` file in the project root directory:
+Create a `.env` file in the project root directory (use [`.env.example`](file:///c:/Users/Mohit%20Singh/OneDrive/Desktop/my_work/Schl-project-pr/.env.example) as reference):
 
 ```env
 Database_host = localhost
@@ -329,7 +344,14 @@ python main.py
 | AP9U1            | John Doe   | 34  | Cardiology | Aarav Mehta      | 1200.00             | 2026-09-01          | PT9U1                    |
 ```
 
-### 3. Ambulance Fleet Viewer
+### 3. Patient Billing & Invoice Receipt
+```markdown
+| Patient ID | Appointment charges | Lab test charges | Total      |
+|:-----------|:--------------------|:-----------------|:-----------|
+| PT9U1      | INR 1200.00         | INR 600.00       | INR 1800.00|
+```
+
+### 4. Ambulance Fleet Viewer
 ```markdown
 | ID     | Status    |
 |:-------|:----------|
@@ -358,11 +380,11 @@ python main.py
 
 - [x] **Patient Portal:** Registration, patient ID generation (`PT9U...`), and record retrieval.
 - [x] **Doctor Portal:** Directory of 50 doctors across 12 clinical specialties with department filter.
-- [x] **Appointments Module:** Complete lifecycle (Booking with random specialist allocation, ID tracking, cancellation).
+- [x] **Appointments Module:** Complete lifecycle (Booking with random specialist allocation, ID tracking, cancellation, and double-booking prevention).
 - [x] **Departments Explorer:** Complete medical overview, consulting fee structure, and doctor counts.
 - [x] **Laboratory & Diagnostics:** Catalog of 10 tests, pricing, and next-day appointment scheduling.
 - [x] **Ambulance Dispatch:** Real-time fleet tracking of 20 vehicles, auto-dispatch, and fee logging.
-- [x] **Billing System:** Consolidated consultation and laboratory expense invoicing by Patient ID.
+- [x] **Billing System:** Dynamic consolidated consultation and laboratory expense invoicing with grand total computation.
 - [ ] **Pharmacy Portal:** Medicine inventory, stock tracker, and prescription dispensing.
 - [ ] **Emergency Contact & Information Module:** Rapid triage contact directory and emergency guidelines.
 - [ ] **Data Modification:** Update capabilities for existing patient and doctor records.

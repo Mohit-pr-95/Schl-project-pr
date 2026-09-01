@@ -15,7 +15,6 @@ load_dotenv()
 
 # connecting to local MySQL server
 try:
-
     connection = mysql.connector.connect(
     host = os.getenv("Database_host"),
     user = os.getenv("Database_user"),
@@ -27,6 +26,84 @@ except mysql.connector.Error as error:
     exit()
 
 cursor = connection.cursor()
+
+# --------------------------------------------------------------------------------------------------------- #
+def book_appointment():
+    appointment_name = input("\nEnter Patient's name  :  ")
+    try:
+        appointment_age = int(input("\nEnter age  :  "))
+        appointment_div = int(input('\n1) Cardiology\n2) Dermatology\n3) Endocrinology\n4) Gynecology\n5) Neurology\n6) Oncology\n7) Ophthalmology\n8) Orthopedics\n9) Pediatrics\n10) Psychiatry\n11) Radiology\n12) Urology\n\nChoose Your category  :  '))
+        appointment_phone = int(input("\nEnter your phone number  :  "))
+                    
+    except ValueError:
+        print('\nInvalid choice !!, restart the programme...\n')
+        exit()
+    appointment_gender = input('\nEnter gender (M/F)  :  ')
+    appointment_bg = input("\nEnter your Blood group  :  ")
+    appointment_adress = input("\nEnter your address  :  ")
+            
+    cursor.execute('SELECT Department_Name FROM departments ORDER BY Department_Name')
+    appointment_booking_fetchall = cursor.fetchall()
+            
+    if 1 <= appointment_div <= 12:
+        print('\nChecking Credentials...\nChecking available Doctors...\nLooking for Vacant appointments...\nPlease wait...\n')
+            
+        appointment_dep = appointment_booking_fetchall[appointment_div - 1][0]
+            
+        try:
+    
+            cursor.execute("SELECT * FROM patients_info")
+            cursor.execute("""INSERT INTO patients_info (ID, Name, Age, Gender, B_goup, Address, Phone) VALUES (%s, %s, %s, %s, %s, %s, %s)""",(f"PT9U{len(cursor.fetchall()) + 1}", appointment_name , appointment_age ,appointment_gender , appointment_bg , appointment_adress, "+91 " + str(appointment_phone)))
+            connection.commit()
+    
+            cursor.execute("""SELECT Names FROM doctors_info WHERE Department = %s""",(appointment_dep,))
+            doctors_list = cursor.fetchall()
+    
+            cursor.execute('SELECT * FROM appointments')
+            a = cursor.fetchall()
+    
+            cursor.execute("SELECT ID FROM patients_info")
+            b = cursor.fetchall()
+    
+            cursor.execute("""SELECT consulting_fee FROM departments WHERE Department_Name = %s""" , (appointment_dep,))
+            fee = cursor.fetchall()[0][0]
+    
+            cursor.execute("""INSERT INTO appointments (ID,P_Name,Doctor,Division,Date,patient_ID,Consulting_fee) VALUES (%s,%s,%s,%s,%s,%s,%s)""",(f'AP9U{len(a) + 1}' , appointment_name , rnd.choice(doctors_list)[0] , appointment_dep , dt.date.today() + dt.timedelta(days=1) , b[len(b) - 1][0] , fee))
+            connection.commit()
+    
+            cursor.execute('SELECT Doctor From appointments')
+            doctor = cursor.fetchall()[len(cursor.fetchall()) - 1][0]
+                    
+            cursor.execute('SELECT patient_ID FROM appointments')
+            c = cursor.fetchall()
+    
+            print(f'\nAppointment Booked successfully !! , Details are shown below :\n\n')
+            
+            print(pd.DataFrame({
+                "ID\n(Remember it)" : [f"AP9U{len(c)}"],
+                "Patient" : [appointment_name],
+                "Age" : [appointment_age],
+                "Division" : [appointment_dep],
+                "Doctor appointed" : [doctor],
+                "Consulting\nFee(INR)" : [fee],
+                "Date of\nAppointment" : [dt.date.today()],
+                "Patient ID\n(Remember it)" : [c[len(c) - 1][0]]
+                }).to_markdown(index=False))
+            
+            print("\nThanks for choosing MEDICARE...\n")
+            
+        except mysql.connector.Error as err:
+            print(f'OOPS!!, Looks like some error arised : {err}\nRestart the programme\nThanks for choosing MEDICARE...\n')
+            exit()
+            
+        finally:
+            cursor.close()
+            connection.close()
+    else:
+        print('Invalid choice!!, Retstart the programme...\nThanks for choosing MEDICARE...\n')
+        exit()
+
+# --------------------------------------------------------------------------------------------------------- #
 
 print("\n===================================================================================")
 print("                             Medicare Hospital Welcomes you                          ")
@@ -194,6 +271,7 @@ elif choose_service == 2:
         exit()
 
 elif choose_service == 3:
+
     print("\n===================================================================================")
     print("                             Appointments                                            ")
     print("===================================================================================\n")
@@ -205,79 +283,23 @@ elif choose_service == 3:
         exit()
 
     if appointment_services == 1:
-        appointment_name = input("\nEnter Patient's name  :  ")
-        try:
-                appointment_age = int(input("\nEnter age  :  "))
-                appointment_div = int(input('\n1) Cardiology\n2) Dermatology\n3) Endocrinology\n4) Gynecology\n5) Neurology\n6) Oncology\n7) Ophthalmology\n8) Orthopedics\n9) Pediatrics\n10) Psychiatry\n11) Radiology\n12) Urology\n\nChoose Your category  :  '))
-                appointment_phone = int(input("\nEnter your phone number  :  "))
-                
-        except ValueError:
-                print('\nInvalid choice !!, restart the programme...\n')
-                exit()
-        appointment_gender = input('\nEnter gender (M/F)  :  ')
-        appointment_bg = input("\nEnter your Blood group  :  ")
-        appointment_adress = input("\nEnter your address  :  ")
-        
-        cursor.execute('SELECT Department_Name FROM departments ORDER BY Department_Name')
-        appointment_booking_fetchall = cursor.fetchall()
-        
-        if 1 <= appointment_div <= 12:
-            print('\nChecking Credentials...\nChecking available Doctors...\nLooking for Vacant appointments...\nPlease wait...\n')
-        
-            appointment_dep = appointment_booking_fetchall[appointment_div - 1][0]
-        
-            try:
 
-                cursor.execute("SELECT * FROM patients_info")
-                cursor.execute("""INSERT INTO patients_info (ID, Name, Age, Gender, B_goup, Address, Phone) VALUES (%s, %s, %s, %s, %s, %s, %s)""",(f"PT9U{len(cursor.fetchall()) + 1}", appointment_name , appointment_age ,appointment_gender , appointment_bg , appointment_adress, "+91 " + str(appointment_phone)))
-                connection.commit()
+        ask_prev_booking = input("\nDo you have any previous Patient ID  :  ")
 
-                cursor.execute("""SELECT Names FROM doctors_info WHERE Department = %s""",(appointment_dep,))
-                doctors_list = cursor.fetchall()
+        if ask_prev_booking.lower() == "y":
+            take_prev_id = input("\nEnter that ID  :  ")
 
-                cursor.execute('SELECT * FROM appointments')
-                a = cursor.fetchall()
+            if take_prev_id.startswith("PT9U1"):
+                cursor.execute("""SELECT * FROM appointments WHERE patient_ID = %s""" , (take_prev_id,))
+                check = cursor.fetchall()
 
-                cursor.execute("SELECT ID FROM patients_info")
-                b = cursor.fetchall()
-
-                cursor.execute("""SELECT consulting_fee FROM departments WHERE Department_Name = %s""" , (appointment_dep,))
-                fee = cursor.fetchall()[0][0]
-
-                cursor.execute("""INSERT INTO appointments (ID,P_Name,Doctor,Division,Date,patient_ID,Consulting_fee) VALUES (%s,%s,%s,%s,%s,%s,%s)""",(f'AP9U{len(a) + 1}' , appointment_name , rnd.choice(doctors_list)[0] , appointment_dep , dt.date.today() + dt.timedelta(days=1) , b[len(b) - 1][0] , fee))
-                connection.commit()
-
-                cursor.execute('SELECT Doctor From appointments')
-                doctor = cursor.fetchall()[len(cursor.fetchall()) - 1][0]
-                
-                cursor.execute('SELECT patient_ID FROM appointments')
-                c = cursor.fetchall()
-
-                print(f'\nAppointment Booked successfully !! , Details are shown below :\n\n')
-        
-                print(pd.DataFrame({
-                    "ID\n(Remember it)" : [f"AP9U{len(c)}"],
-                    "Patient" : [appointment_name],
-                    "Age" : [appointment_age],
-                    "Division" : [appointment_dep],
-                    "Doctor appointed" : [doctor],
-                    "Consulting\nFee(INR)" : [fee],
-                    "Date of\nAppointment" : [dt.date.today()],
-                    "Patient ID\n(Remember it)" : [c[len(c) - 1][0]]
-                    }).to_markdown(index=False))
-        
-                print("\nThanks for choosing MEDICARE...\n")
-        
-            except mysql.connector.Error as err:
-                print(f'OOPS!!, Looks like some error arised : {err}\nRestart the programme\nThanks for choosing MEDICARE...\n')
-                exit()
-        
-            finally:
-                cursor.close()
-                connection.close()
+                if len(check) != 0:
+                    print("\nCancel your existing appointment First to book a new one , or book with different credentials\n\nThanks for Visiting MEDICARE...\n")
+                    exit()
+                else:
+                    book_appointment()
         else:
-            print('Invalid choice!!, Retstart the programme...\nThanks for choosing MEDICARE...\n')
-            exit()
+            book_appointment()
         
     elif appointment_services == 2: # Creating 'View appointment' Feature
         get_appointment_id = input("\nEnter your Appointment ID  :  ")
@@ -574,31 +596,57 @@ elif choose_service == 5:
     get_billing_ID = input("\nEnter your Patient ID  :  ")
 
     if get_billing_ID.startswith("PT9U"):
-        # try:
         cursor.execute("""SELECT * FROM patients_info WHERE ID = %s""" , (get_billing_ID,))
         p = cursor.fetchall()
 
         cursor.execute("""SELECT Consulting_fee FROM appointments WHERE patient_ID=%s""",(get_billing_ID,))
         appointment_charge = cursor.fetchall()
-        
 
-        # except mysql.connector.Error as err:
-        print(f"\nNo Info of patient having ID {get_billing_ID} found in our database... \nTry again by restarting the programme\n\nThanks to visit MEDICARE... \n")
+        cursor.execute("""SELECT Test_charges FROM lab_test_bookings WHERE patient_ID = %s""" , (get_billing_ID,))
+        lab_charges = cursor.fetchall()
 
-        try:
-            cursor.execute("""SELECT Test_charges FROM lab_test_bookings WHERE patient_ID = %s""" , (get_billing_ID,))
-            lab_charges = cursor.fetchall()
+        if len(appointment_charge) == 0 and len(lab_charges) != 0:
+            appointment_charge = "INR " + "0.00"
+            print("\n\nYour bill is :-\n")
 
-        except mysql.connector.Error:
-            print(f"\nNo Info of patient having ID {get_billing_ID} found in our database...\nTry again by restarting the programme\n\nThanks to visit MEDICARE... \n")
+            print(pd.DataFrame({
+                "Patient ID" : [get_billing_ID],
+                "Appointment charges" : [appointment_charge],
+                "Lab test\ncharges" : ["INR " + str(lab_charges[0][0])],
+                "Total" : ["INR " + str(lab_charges[0][0])]
+            }).to_markdown(index=False))
 
-        print("\n\nYour bill is :-\n")
+        elif len(lab_charges) == 0 and len(appointment_charge) != 0:
+            lab_charges = "INR " + "0.00"
+            print("\n\nYour bill is :-\n")
 
-        print(pd.DataFrame({
-            "Patient ID" : [get_billing_ID],
-            "Appointment charges" : ["INR " + str(appointment_charge[0][0])]
-            #"Lab test\ncharges" : ["INR " + str(lab_charges[0])]
-        }).to_markdown(index=False))
+            print(pd.DataFrame({
+                "Patient ID" : [get_billing_ID],
+                "Appointment charges" : ["INR " + str(appointment_charge[0][0])],
+                "Lab test\ncharges" : [lab_charges],
+                "Total" : ["INR" + str(appointment_charge[0][0])]
+            }).to_markdown(index=False))
+
+        elif len(lab_charges) == 0 and len(appointment_charge) == 0:
+            lab_charges = "INR " + "0.00"
+            appointment_charge = "INR " + "0.00"
+            print("\n\nyour bill is :-\n")
+
+            print(pd.DataFrame({
+                "Patient ID" : [get_billing_ID],
+                "Appointment charges" : [appointment_charge],
+                "Lab test\ncharges" : [lab_charges],
+                "Total" : ["INR" + "0.00"]
+            }).to_markdown(index=False))
+
+        else:
+            print("\n\nYour bill is :-\n ")
+            print(pd.DataFrame({
+                "Patient ID" : [get_billing_ID],
+                "Appointment charges" : ["INR " + str(appointment_charge[0][0])],
+                "Lab test\ncharges" : ["INR " + str(lab_charges[0][0])],
+                "Total" : ["INR" + str(appointment_charge[0][0] + lab_charges[0][0])]
+            }).to_markdown(index=False))
 
         print("\nNOTE : This bill includes only Consulting and lab test Fee , \nPharmacy bill would be given to you in hand by store...\n\nThanks for visiting MEDICARE...\n")
 
