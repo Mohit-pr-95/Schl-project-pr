@@ -3,10 +3,11 @@
 [![Python](https://img.shields.io/badge/Python-3.8%2B-blue.svg?logo=python&logoColor=white)](https://www.python.org/)
 [![MySQL](https://img.shields.io/badge/MySQL-8.0%2B-4479A1.svg?logo=mysql&logoColor=white)](https://www.mysql.com/)
 [![Pandas](https://img.shields.io/badge/Pandas-DataFrames-150458.svg?logo=pandas&logoColor=white)](https://pandas.pydata.org/)
+[![Rich](https://img.shields.io/badge/Rich-Terminal%20UI-108536.svg)](https://github.com/Textualize/rich)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Project Status](https://img.shields.io/badge/Status-Active%20Development-success.svg)](#)
+[![Project Status](https://img.shields.io/badge/Status-Completed%20%2F%20Active-success.svg)](#)
 
-> **A comprehensive Command Line Interface (CLI) Hospital Management System** developed in Python with a robust MySQL relational database backend. Designed to streamline patient registrations, doctor directories, appointment scheduling with double-booking prevention, laboratory diagnostics, ambulance dispatching, and dynamic patient billing.
+> **A comprehensive Command Line Interface (CLI) Hospital Management System** developed in Python with a robust MySQL relational database backend. Designed to streamline patient registrations, doctor directories, appointment scheduling with double-booking prevention, laboratory diagnostics, ambulance dispatching, dynamic patient billing, emergency response, and rich hospital information.
 
 ---
 
@@ -15,7 +16,7 @@
 * **Python Application Developer:** Mohit Singh
 * **Database Architect & Manager:** Dev Chauhan
 * **Project Context:** Informatics Practices / Computer Science Project
-* **Development Date:** August 2026
+* **Development Date:** August – September 2026
 
 ---
 
@@ -28,7 +29,9 @@
   - [3. Appointments Management](#3-appointments-management)
   - [4. Hospital Services Explorer](#4-hospital-services-explorer)
   - [5. Billing & Invoice Generation](#5-billing--invoice-generation)
-  - [6. Robust Error Handling & Security](#6-robust-error-handling--security)
+  - [6. Emergency Information & Fast Dispatch](#6-emergency-information--fast-dispatch)
+  - [7. About Hospital (Rich UI)](#7-about-hospital-rich-ui)
+  - [8. Security & Error Handling](#8-security--error-handling)
 - [System Architecture & Workflow](#-system-architecture--workflow)
 - [Database Schema & Architecture](#-database-schema--architecture)
 - [Project Directory Structure](#-project-directory-structure)
@@ -50,14 +53,14 @@
 
 ## 📖 Overview
 
-**Medicare Hospital Management System** is an interactive, menu-driven CLI application designed to automate day-to-day hospital operations. Built on top of Python 3 and MySQL, the application enables staff, patients, and administrators to interact seamlessly with hospital records while ensuring data validation, relational integrity, business logic enforcement, and tabular formatting.
+**Medicare Hospital Management System** is an end-to-end, menu-driven CLI application designed to automate day-to-day healthcare facility operations. Built with Python 3, MySQL, Pandas, and Rich, the application enables staff, patients, and administrators to interact seamlessly with hospital records while ensuring strict data validation, relational integrity, business logic enforcement, and elegant tabular formatting.
 
 ### Primary Objectives:
-- Provide an intuitive, crash-resistant terminal user interface.
-- Maintain persistent records across 8 relational tables in MySQL.
-- Enforce validation rules (e.g., active appointment check before re-booking, alphabetical name checks for ambulance dispatch).
-- Automate identifier generation (`PT9U...` for patients, `AP9U...` for appointments, `TA9U...` for lab tests, `AB9U...` for ambulances).
-- Output query results using structured Markdown tables rendered through `pandas` and `tabulate`.
+- Provide an intuitive, crash-resistant terminal user interface with comprehensive input guards.
+- Maintain persistent records across 8 interconnected relational tables in MySQL.
+- Enforce validation rules (e.g., preventing double-booking active appointments, alphabetical checks for ambulance caller names, ID prefix verification).
+- Automate identifier generation (`PT9U...` for patients, `AP9U...` for appointments, `TA9U...` for lab tests, `AB9U...` for ambulance dispatches).
+- Output query results using structured Markdown tables rendered through `pandas` + `tabulate`, and formatted text via `rich`.
 
 ---
 
@@ -73,15 +76,15 @@
 3) Appointments
 4) More services (Hospital services)
 5) Billing
-6) Emergency information (Upcoming)
-7) About the hospital (Upcoming)
+6) Emergency information
+7) About the hospital
 8) Exit
 ```
 
 ### 1. Patient Portal
 * **Patient Registration:**
-  * Collects comprehensive patient profiles: Full Name, Age, Gender (`M`/`F`), Blood Group (`A+`, `O+`, `B+`, etc.), Residential Address, and Contact Number.
-  * Formats phone numbers automatically with country code (`+91 `).
+  * Collects comprehensive patient demographic profile: Full Name, Age, Gender (`M`/`F`), Blood Group (`A+`, `O+`, `B+`, etc.), Residential Address, and Contact Number.
+  * Formats phone numbers automatically with international country code (`+91 `).
   * Automatically assigns a sequential, unique identifier (e.g., `PT9U1`, `PT9U2`, ...).
   * Inserts records into the `patients_info` MySQL table.
 * **View Patient Records:**
@@ -105,16 +108,16 @@
 ---
 
 ### 3. Appointments Management
-* **Existing Patient Verification & Double-Booking Prevention:**
-  * Verifies if a user already holds a Patient ID (`PT9U...`).
-  * Queries active appointments in the database to prevent duplicate active bookings, advising the patient to either cancel their pending appointment first or proceed with new credentials.
+* **Double-Booking Prevention:**
+  * Verifies if a user already holds an existing Patient ID (`PT9U...`).
+  * Queries active appointments in the database to prevent duplicate active bookings, advising the patient to cancel their pending appointment first before scheduling a new one.
 * **Book an Appointment (`book_appointment`):**
-  * Collects patient demographics and clinical division required.
-  * Registers or links the patient record in `patients_info`.
+  * Collects patient demographics, contact details, and clinical division required.
+  * Automatically registers or links the patient record in `patients_info`.
   * Dynamically queries doctors in the selected specialty and assigns an available specialist at random (`random.choice`).
   * Fetches the department consultation fee (`departments.consulting_fee`).
   * Schedules the appointment for the next calendar day (`today + 1 day`).
-  * Generates unique Appointment ID (e.g., `AP9U1`) and outputs a full confirmation receipt.
+  * Generates a unique Appointment ID (e.g., `AP9U1`) and outputs a full confirmation receipt.
 * **View Appointment Status:**
   * Queries appointment records by Appointment ID (`AP9U...`).
   * Displays patient name, allocated doctor, department division, appointment date, patient ID, and consulting fee.
@@ -146,14 +149,16 @@
     * `LT008`: **X-Ray** (₹500)
     * `LT009`: **CT Scan** (₹3,500)
     * `LT010`: **MRI Scan** (₹6,500)
-* **Book Lab Test:**
+* **Book Lab Test (`book_lab_test`):**
+  * Includes verification for existing patient ID with active booking check.
   * Enrolls patient details, schedules test for the next day, and creates a booking record (`TA9U...`).
+  * Automatically cross-links `patient_ID` and records diagnostic test charges in `lab_test_bookings`.
   * Informs the patient of the booking reference and clinic cancellation policy.
 
 #### 🚑 Ambulance Fleet & Emergency Dispatch
 * **Fleet Availability Viewer:**
   * Displays live operational status for 20 hospital ambulances (`AM9U1` – `AM9U20`) as `Available` or `On Duty`.
-* **Instant Ambulance Dispatch:**
+* **Instant Ambulance Dispatch (`book_ambulance`):**
   * Validates requester's name against invalid non-alphabetical characters.
   * Finds currently available ambulances and randomly allocates an active unit.
   * Logs the booking under `ambulance_bookings` (`AB9U...`) with a standard fixed dispatch fee (₹250.00).
@@ -175,7 +180,23 @@
 
 ---
 
-### 6. Robust Error Handling & Security
+### 6. Emergency Information & Fast Dispatch
+* **Emergency Hotlines Directory:** Displays critical contact numbers for Hospital Emergency, Ambulance, Police (`112`), Fire (`101`), and Reception in a clean table.
+* **24/7 Facility Availability:** Renders operational status for Emergency Department, Emergency Doctors, Nursing Staff, Ambulances, Laboratories, and Pharmacy.
+* **Direct Emergency Dispatch:** Offers instant ambulance request directly from the emergency portal without navigating back to the main menu.
+
+---
+
+### 7. About Hospital (Rich UI)
+* Utilizes **`rich`** (`Console`, `Markdown`) for styled, formatted terminal output.
+* **Hospital Overview:** Establishment history (Est. 2012), 250-bed capacity, 45+ doctors, 70+ nursing staff, 12 departments.
+* **Mission & Vision:** Healthcare philosophy and institutional goals.
+* **Key Facilities:** ICU, modern operation theatres, blood bank, digital diagnostic labs, 24x7 emergency & pharmacy.
+* **Contact & Operating Hours:** Complete facility addresses, contact emails, and departmental working hours.
+
+---
+
+### 8. Security & Error Handling
 * **Environment Protection:** Database credentials are securely loaded from a local `.env` file and excluded from version control via `.gitignore`.
 * **SQL Injection Prevention:** Uses parameterized SQL queries (`%s` placeholders with value tuples).
 * **Input Validation:** Enforces integer type validation and string constraints to prevent runtime crashes.
@@ -213,7 +234,12 @@ flowchart TD
 
     MainMenu -->|Option 5| Billing[Billing: Generate Itemized Bill by PT9U#]
     Billing --> CalcDues[Compute Appointment + Lab Dues -> Total Balance]
-    
+
+    MainMenu -->|Option 6| Emergency[Emergency Info: Hotlines & 24/7 Status]
+    Emergency --> QuickAmb[Direct Ambulance Dispatch Call]
+
+    MainMenu -->|Option 7| About[About Medicare: Rich Terminal Markdown]
+
     MainMenu -->|Option 8| Exit([Exit Program])
 ```
 
@@ -227,7 +253,7 @@ The database `new_database` consists of 8 interconnected tables:
 | :--- | :--- | :--- | :--- |
 | `patients_info` | `ID` (`VARCHAR(10)`) | Stores registered patient demographic profiles | `ID`, `Name`, `Age`, `Gender`, `B_goup`, `Address`, `Phone` |
 | `doctors_info` | `ID` (`VARCHAR(7)`) | Contains list of 50 specialist doctors | `ID`, `Names`, `Department`, `Experience` |
-| `departments` | `ID` (`VARCHAR(5)`) | 12 hospital departments with descriptions & fees | `ID`, `Department_Name`, `Description`, `consulting_fee` |
+| `departments` | `ID` (`VARCHAR(5)`) | 12 hospital departments with descriptions & fees | `ID`, `Department_Name`, `Description`, `consulting fee (INR)` |
 | `appointments` | `ID` (`VARCHAR(7)`) | Patient appointment bookings & assignments | `ID`, `P_Name`, `Doctor`, `Division`, `Date`, `patient_ID`, `Consulting_fee` |
 | `laboratory_tests` | `ID` (`VARCHAR(5)`) | Catalog of 10 available diagnostic lab tests | `ID`, `Test`, `Description`, `Charges`, `Department` |
 | `lab_test_bookings`| `ID` (`VARCHAR(7)`) | Bookings for laboratory diagnostic tests | `ID`, `Name`, `Age`, `Gender`, `Phone_No`, `Department`, `Date`, `patient_ID`, `Test_charges` |
@@ -246,7 +272,6 @@ Schl-project-pr/
 ├── main.py                    # Main executable Python CLI application
 ├── new.sql                    # MySQL Database schema definition and seed data
 ├── README.md                  # Project documentation (this file)
-├── test.py                    # Internal testing / helper script
 ├── IP-project_original.docx   # Original project documentation report
 └── IP_Project_edited.docx     # Edited project documentation report
 ```
@@ -285,10 +310,12 @@ source venv/bin/activate
 ### Step 3: Install Dependencies
 Install all required libraries via `pip`:
 ```bash
-pip install mysql-connector-python pandas python-dotenv tabulate
+pip install mysql-connector-python pandas python-dotenv tabulate rich
 ```
 
-> **Note:** `tabulate` is required by `pandas.DataFrame.to_markdown()` for terminal table formatting.
+> **Note:**
+> - `tabulate` is required by `pandas.DataFrame.to_markdown()` for terminal table formatting.
+> - `rich` is used for rendering formatted markdown in the About Hospital section.
 
 ---
 
@@ -351,14 +378,15 @@ python main.py
 | PT9U1      | INR 1200.00         | INR 600.00       | INR 1800.00|
 ```
 
-### 4. Ambulance Fleet Viewer
+### 4. Emergency Contacts & Service Status
 ```markdown
-| ID     | Status    |
-|:-------|:----------|
-| AM9U1  | Available |
-| AM9U2  | Available |
-| AM9U3  | On Duty   |
-| AM9U4  | Available |
+| Hospital Emergency | Ambulance     | Police | Fire | Hospital Reception |
+|:-------------------|:--------------|:-------|:-----|:-------------------|
+| 1800-XXX-XXXX      | 1800-XXX-XXXX | 112    | 101  | 1800-XXX-XXXX      |
+
+| Emergency Department | Emergency Doctors | Nursing Staff | Ambulance | Laboratory | Pharmacy  |
+|:---------------------|:------------------|:--------------|:----------|:-----------|:----------|
+| 24/7                 | Available         | Available     | Available | Available  | Available |
 ```
 
 ---
@@ -371,8 +399,9 @@ python main.py
 | **Database** | MySQL | Relational database management system |
 | **Connector** | `mysql-connector-python` | Python-to-MySQL database driver |
 | **Data Formatting** | `pandas` + `tabulate` | Transforming SQL query tuples into Markdown tables |
+| **Terminal UI** | `rich` | Rendering stylized Markdown and console highlights |
 | **Environment Mgmt** | `python-dotenv` | Secure loading of database credentials |
-| **Standard Libraries** | `datetime`, `random`, `os`, `shutil` | Date calculations, random assignment, OS interactions |
+| **Standard Libraries** | `datetime`, `random`, `os` | Date calculations, random assignment, OS interactions |
 
 ---
 
@@ -385,9 +414,10 @@ python main.py
 - [x] **Laboratory & Diagnostics:** Catalog of 10 tests, pricing, and next-day appointment scheduling.
 - [x] **Ambulance Dispatch:** Real-time fleet tracking of 20 vehicles, auto-dispatch, and fee logging.
 - [x] **Billing System:** Dynamic consolidated consultation and laboratory expense invoicing with grand total computation.
+- [x] **Emergency Information Module:** Rapid triage hotline directory, 24/7 service availability, and fast ambulance dispatch.
+- [x] **About Hospital Portal:** Rich terminal UI presentation of hospital overview, statistics, facilities, and contact details.
+- [x] **Full CLI Menu Integration:** All 8 services fully operational with modular functions (`book_appointment`, `book_lab_test`, `book_ambulance`).
 - [ ] **Pharmacy Portal:** Medicine inventory, stock tracker, and prescription dispensing.
-- [ ] **Emergency Contact & Information Module:** Rapid triage contact directory and emergency guidelines.
-- [ ] **Data Modification:** Update capabilities for existing patient and doctor records.
 - [ ] **Graphical User Interface (GUI):** Desktop GUI with Tkinter / PyQt or Web UI with Flask/FastAPI.
 
 ---
