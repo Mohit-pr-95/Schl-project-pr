@@ -9,7 +9,8 @@ import mysql.connector # Importing SQL for table database managament through pyt
 import pandas as pd
 import datetime as dt
 import random as rnd
-import shutil
+from rich.console import Console
+from rich.markdown import Markdown
 
 load_dotenv()
 
@@ -143,6 +144,43 @@ def book_lab_test():
     except mysql.connector.Error as err:
         print("\nOOPS!, Looks like some error occured \nTry agian bhy restarting the programme\n\nThanks for visiting MEDICARE...\n")
         exit()
+
+# ---------------------------------------------------------------------------------------------- #
+
+def book_ambulance():
+    get_amb_name = input("\nEnter your name  :  ")
+    
+    for i in range(len(get_amb_name)):
+        if get_amb_name[i] not in "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ":
+            print("\nInvalid name enrty !, Try agian by restarting the programme\n\nThanks for choosing MEDICARE...\n")
+            exit()
+        else:
+            if i == len(get_amb_name) - 1:
+                try:
+    
+                    cursor.execute("SELECT ID FROM ambulance_record WHERE status='Available'")
+                    ambulances = cursor.fetchall()
+                    ambulance_given = rnd.choice(ambulances) # Giving ambulance to user randomly from available ambulances
+    
+                    cursor.execute("select * from ambulance_bookings")
+                    cursor.execute("""INSERT INTO ambulance_bookings (ID,Name,Ambulance,Fee) VALUES (%s,%s,%s,%s)""",(f"AB9U{len(cursor.fetchall()) + 1}" , get_amb_name , ambulance_given[0] , 250.0)) # updating the booking table
+                    connection.commit()
+    
+                    cursor.execute("""UPDATE ambulance_record SET status='On Duty' WHERE ID=%s""",(ambulance_given[0],))
+                    connection.commit()
+                                
+                    print(f"\nChecking availablity of ambulance...\n\nFetching database...\n\nSuccessfully booked a ambualnce \nAmbulance ID is {ambulance_given[0]}\nThanks for chhoosing MEDICARE...\n")
+                except mysql.connector.Error as err:
+                    print(f"\nOOPS !! , looks like some error occured From our server side : {err}, please try again by restarting the programme\n\nThanfor choosing MEDICARE...\n")
+                    exit()
+                finally:
+                    cursor.close()
+                    connection.close()
+    
+            else:
+                continue
+
+# --------------------------------------------------------------------------------------------------------------------- #
 
 print("\n===================================================================================")
 print("                             Medicare Hospital Welcomes you                          ")
@@ -575,37 +613,7 @@ elif choose_service == 4:
                 connection.close()
 
         elif ambulance_service_choice == 2:
-            get_amb_name = input("\nEnter your name  :  ")
-
-            for i in range(len(get_amb_name)):
-                if get_amb_name[i] not in "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ":
-                    print("\nInvalid name enrty !, Try agian by restarting the programme\n\nThanks for choosing MEDICARE...\n")
-                    exit()
-                else:
-                    if i == len(get_amb_name) - 1:
-                        try:
-
-                            cursor.execute("SELECT ID FROM ambulance_record WHERE status='Available'")
-                            ambulances = cursor.fetchall()
-                            ambulance_given = rnd.choice(ambulances) # Giving ambulance to user randomly from available ambulances
-
-                            cursor.execute("select * from ambulance_bookings")
-                            cursor.execute("""INSERT INTO ambulance_bookings (ID,Name,Ambulance,Fee) VALUES (%s,%s,%s,%s)""",(f"AB9U{len(cursor.fetchall()) + 1}" , get_amb_name , ambulance_given[0] , 250.0)) # updating the booking table
-                            connection.commit()
-
-                            cursor.execute("""UPDATE ambulance_record SET status='On Duty' WHERE ID=%s""",(ambulance_given[0],))
-                            connection.commit()
-                            
-                            print(f"\nChecking availablity of ambulance...\n\nFetching database...\n\nSuccessfully booked a ambualnce \nAmbulance ID is {ambulance_given[0]}\nThanks for chhoosing MEDICARE...\n")
-                        except mysql.connector.Error as err:
-                            print(f"\nOOPS !! , looks like some error occured From our server side : {err}, please try again by restarting the programme\n\nThanks for choosing MEDICARE...\n")
-                            exit()
-                        finally:
-                            cursor.close()
-                            connection.close()
-
-                    else:
-                        continue
+            book_ambulance()
         else:
             print("\nPrint Invalid choice !, Try again  by restarting the programme\n\nThanks for choosing MEDICARE...\n")
 
@@ -674,3 +682,146 @@ elif choose_service == 5:
     else:
         print("\nInvalid ID !, restart the programme\n\nThanks for visiting MEDICARE...\n")
         exit()
+elif choose_service == 6:
+    print("\n===================================================================================")
+    print("                       Emeregency info                                               ")
+    print("===================================================================================\n")
+    print(".....................................................")
+    print(".           Emergency contacts                      .")
+    print(".....................................................\n\n")
+
+    print(pd.DataFrame({
+        "Hospital Emergency" : ["1800-XXX-XXXX"],
+        "Ambulance"           : ["1800-XXX-XXXX"],
+        'Police'              : ["112"],
+        'Fire'                : ["101"],
+        'Hospital Reception'  : ['1800-XXX-XXXX']
+    }).to_markdown(index=False))
+
+    print("\n\n.....................................................")
+    print(".           Emergency services                      .")
+    print(".....................................................\n\n")
+
+    print(pd.DataFrame({
+        'Emergency Department' : ["24/7"],
+        'Emergency Doctors' : ['Available'],
+        'Nursing Staff' : ['Available'],
+        'Ambulance' : ['Available'],
+        'Laboratory' : ['Available'],
+        'Pharmacy' : ['Available']
+    }).to_markdown(index=False))
+
+    print("\n\nFor immediate assistance:\nCall Hospital Emergency\n")
+    ask_emeregency_ambulance = input("\nNeed an ambulance ? (Y/N)  :  ")
+    if ask_emeregency_ambulance.lower() == "y" or ask_emeregency_ambulance.lower() == "yes":
+
+        ask_booking = input("\nWant to request an Ambulance ? (Y/N)  :  ")
+
+        if ask_booking.lower() == "y" or ask_booking.lower() == "yes":
+            book_ambulance()
+        else:
+            print("\nInavlid input !, try again by restarting the programme\n\nThanks for visiting MEDICARE...\n")
+    else:
+        print("\nInavlid input !, try again by restarting the programme\n\nThanks for visiting MEDICARE...\n")
+
+    print("\nThanks for visitng MEDICARE...\n")
+
+elif choose_service == 7:
+    text = """# 🏥 ABOUT MEDICARE HOSPITAL
+
+## Welcome to Medicare Hospital
+
+**Medicare Hospital** is a modern multi-specialty healthcare center dedicated to providing reliable, affordable, and patient-focused medical care. Established in **2012**, the hospital combines experienced medical professionals, modern diagnostic facilities, and a patient-friendly environment.
+
+###  Hospital Overview
+
+* **Hospital Name:** Medicare Hospital
+* **Established:** 2012
+* **Location:** Sector 52, New Delhi, India
+* **Type:** Multi-Specialty Hospital
+* **Total Beds:** 250
+* **Emergency Service:** Available 24 × 7
+* **Ambulance Service:** Available 24 × 7
+* **Pharmacy:** Open 24 × 7
+* **Laboratory:** Open 24 × 7
+* **Doctors:** 45+
+* **Nursing Staff:** 70+
+* **Departments:** 12
+
+### 🩺 Our Departments
+
+Medicare Hospital provides specialized treatment through multiple departments:
+
+1. Cardiology
+2. Dermatology
+3. Endocrinology
+4. Gynecology
+5. Neurology
+6. Oncology
+7. Ophthalmology
+8. Orthopedics
+9. Pediatrics
+10. Psychiatry
+11. Radiology
+12. Urology
+
+###  Our Mission
+
+Our mission is to provide accessible and quality healthcare while maintaining the highest standards of patient safety, professional ethics, and medical care.
+
+###  Our Vision
+
+To become a trusted healthcare institution known for excellent medical services, advanced technology, compassionate care, and continuous improvement.
+
+###  Key Facilities
+
+* 24 × 7 Emergency Department
+* Intensive Care Unit (ICU)
+* Modern Operation Theatres
+* Digital Diagnostic Laboratory
+* Radiology and Imaging Services
+* In-house Pharmacy
+* Blood Bank
+* Ambulance Services
+* Outpatient Department (OPD)
+* Inpatient Department (IPD)
+* Patient Waiting Areas
+* Cafeteria and Visitor Facilities
+
+###  Patient-Centered Care
+
+Our healthcare team focuses on understanding each patient's needs and providing personalized treatment. From appointment booking and laboratory testing to pharmacy services and emergency assistance, our goal is to make the healthcare experience simple and convenient.
+
+###  Contact Information
+
+**Address:**
+Medicare Hospital
+Sector 52, New Delhi, India
+
+**Reception:** +91-11-4567-8900
+**Emergency:** +91-11-4567-8911
+**Ambulance:** +91-11-4567-8922
+**Email:** medicarehsptl001@gmail.com
+
+###  Working Hours
+
+**OPD:** Monday – Saturday, 9:00 AM – 6:00 PM
+**Emergency:** 24 × 7
+**Laboratory:** 24 × 7
+**Pharmacy:** 24 × 7
+
+> **Note:** The hospital name, address, contact numbers, statistics, and other details above are fictional and intended only for demonstration purposes in the project.
+"""
+    console = Console()
+    console.print(Markdown(text))
+    print("\nThanks for visiting MEDICARE...\n")
+
+elif choose_service == 8:
+    print("\nThanks for visitng MEDICARE...\n")
+    exit()
+
+else:
+    print("\nInvalid choice , try again by restarting the programme\n\nThanks for visitng MEDICARE...\n")
+    exit()
+
+# ----------------------------- END  OF  PROJECT --------------------------------------------------- #
